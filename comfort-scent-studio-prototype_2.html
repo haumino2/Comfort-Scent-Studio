@@ -1,0 +1,3075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>SEC Demo | Comfort Scent Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg-1:#e7e2f7;
+    --page-bg-2:#d9ecf3;
+    --phone-bg:#fffdfb;
+    --mist:#f6f3fb;
+    --ink:#2b2640;
+    --ink-soft:#6a6380;
+    --lilac:#b8a6e0;
+    --lilac-deep:#8f7bc4;
+    --blue:#9fc9e0;
+    --blue-deep:#6fa9c9;
+    --plum:#5b4b8a;
+    --peach:#f3caa3;
+    --peach-deep:#e8a56b;
+    --line:#e7e1f4;
+    --radius-lg:26px;
+    --radius-md:18px;
+    --radius-pill:999px;
+    --shadow-soft:0 18px 40px -18px rgba(91,75,138,0.35);
+    --current-mood-1:#b8a6e0;
+    --current-mood-2:#9fc9e0;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  html{height:100%;}
+  body{
+    min-height:100%;
+    background:
+      radial-gradient(circle at 15% 10%, var(--page-bg-1), transparent 55%),
+      radial-gradient(circle at 85% 90%, var(--page-bg-2), transparent 55%),
+      #f2eff9;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    margin:0;
+    overflow-x:hidden;
+  }
+  .page{
+    max-width:960px;
+    margin:0 auto;
+    padding:40px 20px 56px;
+  }
+  .page.page-wide{max-width:1120px;}
+  .page-hero{
+    text-align:center;
+    margin-bottom:36px;
+  }
+  .page-hero .overline{
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  .page-hero h1{
+    font-size:clamp(28px, 5vw, 38px);
+    line-height:1.15;
+    margin-bottom:14px;
+    max-width:640px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  .page-hero .lead{
+    font-size:16px;
+    line-height:1.65;
+    color:var(--ink-soft);
+    max-width:520px;
+    margin:0 auto 24px;
+  }
+  .page-nav{
+    display:flex;
+    justify-content:center;
+    gap:4px;
+    margin-bottom:28px;
+  }
+  .page-nav button{
+    border:none;
+    background:transparent;
+    padding:10px 20px;
+    font-family:'Inter';
+    font-weight:500;
+    font-size:14px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:color .2s, border-color .2s;
+  }
+  .page-nav button.active{
+    color:var(--plum);
+    border-bottom-color:var(--plum);
+    font-weight:600;
+  }
+  .page-nav button:focus-visible{outline:2px solid var(--plum); outline-offset:2px;}
+  .proto-wrap{display:flex; justify-content:center; align-items:flex-start; transition:padding .3s;}
+  .proto-wrap.advisor-active{padding-top:8px;}
+  .dash-section{max-width:820px; margin:0 auto;}
+  h1,h2,h3,.display{
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{font-family:'DM Mono', monospace;}
+
+  .view-switch{display:none;}
+
+  .phone-shell{
+    width:390px;
+    max-width:92vw;
+    height:812px;
+    max-height:86vh;
+    background:#141225;
+    border-radius:46px;
+    padding:12px;
+    box-shadow:var(--shadow-soft), 0 0 0 2px rgba(20,18,37,0.5);
+    position:relative;
+    transition:width .35s ease, height .35s ease, max-height .35s ease;
+  }
+  .phone-shell.advisor-landscape{
+    width:min(844px, 96vw);
+    height:min(420px, 72vh);
+    max-height:72vh;
+    border-radius:38px;
+  }
+  .phone-shell.advisor-landscape .statusbar{padding:10px 22px 2px; font-size:12px;}
+  .phone-shell.advisor-landscape .home-indicator{bottom:6px; width:100px;}
+  .phone-screen{
+    background:var(--phone-bg);
+    width:100%;
+    height:100%;
+    border-radius:34px;
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .statusbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 26px 4px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .statusbar .dot-cluster{display:flex; gap:4px; align-items:center;}
+  .home-indicator{
+    position:absolute;
+    bottom:8px;
+    left:50%;
+    transform:translateX(-50%);
+    width:120px;
+    height:5px;
+    border-radius:99px;
+    background:rgba(43,38,64,0.25);
+    z-index:10;
+    pointer-events:none;
+  }
+
+  /* Stable screen model: one absolute layer, only active scrolls */
+  .stage{
+    position:relative;
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+  }
+  .screen{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    display:none;
+    flex-direction:column;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    padding:12px 22px 44px;
+  }
+  .screen.active{
+    display:flex;
+    flex-direction:column;
+    z-index:1;
+  }
+  .screen-body{flex:1 0 auto;}
+  .screen-foot{
+    flex-shrink:0;
+    padding-top:20px;
+    padding-bottom:4px;
+  }
+  .screen.has-foot .screen-body{
+    flex:1 0 auto;
+  }
+
+  .topnav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    min-height:34px;
+    margin:0 -22px 8px;
+    padding:4px 22px 8px;
+    flex-shrink:0;
+    position:sticky;
+    top:0;
+    z-index:2;
+    background:var(--phone-bg);
+  }
+  .back-btn{
+    border:none;
+    background:var(--mist);
+    width:34px;height:34px;
+    border-radius:var(--radius-pill);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--plum);
+    font-size:16px;
+    cursor:pointer;
+  }
+  .back-btn:focus-visible{outline:2px solid var(--plum); outline-offset:2px;}
+  .spacer{width:34px;}
+
+  .progress-row{display:flex; gap:6px; margin:4px 0 18px; flex-shrink:0;}
+  .progress-seg{
+    flex:1; height:6px; border-radius:99px;
+    background:var(--line); overflow:hidden;
+  }
+  .progress-seg .fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, var(--current-mood-1), var(--current-mood-2));
+    border-radius:99px; transition:width .4s ease;
+  }
+  .progress-seg.done .fill, .progress-seg.active .fill{width:100%;}
+
+  .bloom-wrap{display:flex; justify-content:center; margin:6px 0 14px; flex-shrink:0;}
+  .bloom{
+    width:96px;height:96px; border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, var(--current-mood-1), var(--current-mood-2) 72%);
+    box-shadow:0 18px 30px -12px rgba(91,75,138,0.5);
+    animation:breathe 4.5s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{transform:scale(1);} 50%{transform:scale(1.06);}}
+
+  .eyebrow{
+    font-size:12px; font-weight:600;
+    color:var(--lilac-deep); margin-bottom:6px;
+  }
+  h2.q-title{font-size:22px; line-height:1.25; margin-bottom:4px;}
+  p.q-sub{font-size:14px; color:var(--ink-soft); margin:0 0 18px; line-height:1.5;}
+  .headline-xl{font-size:28px; line-height:1.15; margin-bottom:10px;}
+  .body-copy{font-size:14.5px; color:var(--ink-soft); line-height:1.6; margin:0 0 20px;}
+
+  .btn-primary{
+    width:100%; border:none; background:var(--plum); color:#fff;
+    font-family:'Inter'; font-weight:600; font-size:15px;
+    padding:16px 20px; border-radius:var(--radius-md); cursor:pointer;
+    box-shadow:0 14px 26px -12px rgba(91,75,138,0.55);
+    transition:transform .15s ease;
+  }
+  .btn-primary:hover{transform:translateY(-1px);}
+  .btn-primary:active{transform:translateY(0) scale(0.98);}
+  .btn-primary:focus-visible{outline:2px solid var(--plum); outline-offset:3px;}
+  .btn-secondary{
+    width:100%; border:1.5px solid var(--line); background:#fff; color:var(--ink);
+    font-family:'Inter'; font-weight:600; font-size:15px;
+    padding:15px 20px; border-radius:var(--radius-md); cursor:pointer; margin-top:10px;
+  }
+  .btn-secondary:focus-visible{outline:2px solid var(--plum); outline-offset:3px;}
+  .btn-ghost{
+    border:none; background:transparent; color:var(--ink-soft);
+    font-family:'Inter'; font-weight:600; font-size:13.5px;
+    cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:8px;
+  }
+
+  .landing-hero{
+    display:flex; flex-direction:column;
+    justify-content:center; align-items:center; text-align:center;
+    gap:10px; padding:24px 0 20px;
+  }
+  .landing-bloom{
+    width:130px;height:130px; border-radius:50%;
+    background:conic-gradient(from 140deg, #e3b8d9, #9fc9e0, #c9a978, #f0a998, #e3b8d9);
+    margin-bottom:18px;
+    box-shadow:0 20px 44px -18px rgba(91,75,138,0.4);
+    animation:breathe 5s ease-in-out infinite;
+  }
+  .context-line{
+    font-size:13px; color:var(--ink-soft); line-height:1.5;
+    margin-bottom:4px;
+  }
+
+  .intro-steps{
+    margin:20px 0 24px; padding:0; list-style:none;
+  }
+  .intro-steps li{
+    font-size:14px; color:var(--ink-soft); line-height:1.55;
+    padding:10px 0; border-bottom:1px solid var(--line);
+  }
+  .intro-steps li:last-child{border-bottom:none;}
+  .intro-steps li strong{color:var(--ink); font-weight:600;}
+
+  .context-note{
+    font-size:13.5px; color:var(--ink-soft); line-height:1.6;
+    margin:0 0 20px;
+  }
+  .context-note strong{color:var(--ink); font-weight:600;}
+
+  .opt-list{display:flex; flex-direction:column; gap:10px;}
+  .opt-row{
+    border:none; border-bottom:1px solid var(--line); background:transparent;
+    border-radius:0; padding:16px 4px;
+    display:flex; align-items:center; justify-content:space-between;
+    cursor:pointer; transition:color .15s ease;
+    text-align:left; width:100%;
+  }
+  .opt-row:hover{color:var(--plum);}
+  .opt-row:focus-visible{outline:2px solid var(--plum); outline-offset:2px;}
+  .opt-row .label{font-weight:600; font-size:14px;}
+  .opt-row .sub{font-size:12px; color:var(--ink-soft); margin-top:2px; font-weight:400;}
+  .opt-row .tick{width:22px;height:22px;border-radius:50%; border:1.5px solid var(--line); flex-shrink:0;}
+
+  .result-card{
+    background:var(--mist);
+    border-radius:var(--radius-lg);
+    padding:22px 18px 20px; text-align:center; margin-bottom:20px;
+  }
+  .result-card .rec-label{
+    font-size:13px; font-weight:600; color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  .bottle-wrap{display:flex; justify-content:center; margin-bottom:10px;}
+  .fit-score-row{
+    display:flex; align-items:center; justify-content:center; gap:12px;
+    margin-bottom:12px;
+  }
+  .fit-score-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--plum); color:#fff;
+    border-radius:var(--radius-pill); padding:7px 16px;
+    font-size:12px; font-weight:700;
+  }
+  .fit-score-badge .pct{font-family:'DM Mono'; font-size:18px;}
+  .fit-tier{
+    font-size:12px; font-weight:600; color:var(--plum);
+  }
+  .fit-meter-wrap{margin-bottom:14px; text-align:left;}
+  .fit-meter-label{
+    display:flex; justify-content:space-between;
+    font-size:11px; font-weight:600; color:var(--ink-soft); margin-bottom:5px;
+  }
+  .fit-meter-track{
+    height:8px; background:var(--line); border-radius:99px; overflow:hidden;
+  }
+  .fit-meter-fill{
+    height:100%; border-radius:99px;
+    background:linear-gradient(90deg, var(--current-mood-1), var(--plum));
+    transition:width .6s ease;
+  }
+  .sku-line{
+    font-family:'DM Mono'; font-size:11px; color:var(--ink-soft);
+    margin-top:6px; letter-spacing:0.02em;
+  }
+  .reason-list{
+    display:flex; flex-direction:column; gap:8px; margin-bottom:14px;
+  }
+  .reason-chip{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:10px 0; border-bottom:1px solid var(--line);
+    font-size:13.5px; color:var(--ink-soft); line-height:1.5; text-align:left;
+  }
+  .reason-chip:last-child{border-bottom:none;}
+  .reason-chip .ico{flex-shrink:0; font-size:14px; color:var(--plum);}
+  .why-block{
+    font-size:14px; color:var(--ink-soft); line-height:1.65;
+    text-align:left; margin-bottom:20px;
+  }
+  .why-block h3{
+    font-family:'Quicksand',sans-serif; font-size:15px;
+    color:var(--ink); margin:0 0 8px; font-weight:700;
+  }
+  .why-block b{color:var(--ink);}
+  .disclaimer{
+    font-size:11.5px; color:var(--ink-soft); line-height:1.55;
+    margin-bottom:16px; padding:0;
+  }
+  .alt-block{
+    padding:16px 0; margin-bottom:16px;
+    border-top:1px solid var(--line);
+  }
+  .alt-block .alt-label{font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px;}
+  .alt-block .alt-name{font-weight:700; font-size:15px; margin-bottom:4px;}
+  .alt-block .alt-desc{font-size:13px; color:var(--ink-soft); line-height:1.5;}
+
+  .compare-actions{
+    padding:16px 0; margin-bottom:8px;
+    border-top:1px solid var(--line);
+  }
+  .compare-actions p{font-size:13px; color:var(--ink-soft); margin:0 0 12px; line-height:1.5;}
+
+  .shelf-note{
+    font-size:14px; color:var(--ink-soft); line-height:1.6;
+    margin-bottom:24px; padding-bottom:20px;
+    border-bottom:1px solid var(--line);
+  }
+  .shelf-note strong{color:var(--ink); font-weight:600;}
+  .cmp-card{
+    padding:14px 12px; background:transparent;
+    border-right:1px solid var(--line);
+  }
+  .cmp-card:last-child{border-right:none;}
+  .cmp-cards{
+    display:grid; grid-template-columns:1fr 1fr; gap:0;
+    margin-bottom:24px; border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .cmp-card.winner{background:var(--mist);}
+  .cmp-card .cmp-tag{
+    font-size:11px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;
+  }
+  .cmp-card.winner .cmp-tag{color:var(--plum);}
+  .cmp-card .cmp-name{font-size:12px; font-weight:700; line-height:1.3; margin-bottom:8px; min-height:32px;}
+  .cmp-row{
+    display:flex; justify-content:space-between; gap:4px;
+    font-size:11px; padding:5px 0; border-top:1px solid var(--line);
+  }
+  .cmp-row:first-of-type{border-top:none;}
+  .cmp-row .cr-key{color:var(--ink-soft); flex-shrink:0;}
+  .cmp-row .cr-val{text-align:right; font-weight:600; line-height:1.3;}
+
+  .cta-promo{
+    background:var(--plum); border-radius:var(--radius-md);
+    padding:22px 18px; margin:0 0 16px; color:#fff; text-align:center;
+  }
+  .cta-promo h3{font-size:17px; margin-bottom:6px; color:#fff;}
+  .cta-promo p{font-size:13px; opacity:0.92; margin:0 0 16px; line-height:1.5;}
+  .cta-promo .btn-sample{
+    width:100%; border:none; background:#fff; color:var(--plum);
+    font-family:'Inter'; font-weight:700; font-size:15px;
+    padding:15px 20px; border-radius:var(--radius-md); cursor:pointer;
+    margin-bottom:8px;
+  }
+  .cta-promo .btn-ba{
+    width:100%; border:1.5px solid rgba(255,255,255,0.45);
+    background:transparent; color:#fff;
+    font-family:'Inter'; font-weight:600; font-size:14px;
+    padding:13px 20px; border-radius:var(--radius-md); cursor:pointer;
+  }
+
+  .cta-row{display:flex; flex-direction:column; gap:10px;}
+  .cta-row .btn-secondary{margin-top:0;}
+
+  .tip-card{
+    padding:8px 0 20px; text-align:left;
+  }
+  .tip-icon{font-size:34px; margin-bottom:10px;}
+
+  .code-box{
+    background:var(--ink); color:#fff; border-radius:var(--radius-md);
+    padding:20px; text-align:center; margin:16px 0;
+  }
+  .code-box .code{font-family:'DM Mono'; font-size:24px; letter-spacing:0.12em; margin-top:6px;}
+  .qr-mock{
+    width:120px;height:120px; margin:0 auto 14px;
+    background:
+      repeating-linear-gradient(0deg, #fff 0 6px, #141225 6px 12px),
+      repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,0.4) 6px 12px);
+    border-radius:12px; border:6px solid #fff;
+  }
+
+  .feedback-row{display:flex; gap:14px; justify-content:center; margin:24px 0;}
+  .feedback-btn{
+    width:76px;height:76px; border-radius:50%;
+    border:1.5px solid var(--line); background:#fff; font-size:30px;
+    cursor:pointer; display:flex;align-items:center;justify-content:center;
+    transition:transform .15s ease;
+  }
+  .feedback-btn:hover{transform:translateY(-2px);}
+  .feedback-btn.selected{border-color:var(--plum); background:var(--mist);}
+
+  svg.bottle{width:88px; height:118px;}
+
+  .analyzing-overlay{
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:12px;
+    min-height:min(100%, 420px);
+    padding:48px 0;
+  }
+  .analyzing-spinner{
+    width:34px;height:34px; border-radius:50%;
+    border:3px solid var(--line); border-top-color:var(--plum);
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .claim-flag{display:none;}
+
+  .future-aside{
+    padding:20px 0; margin-top:8px;
+    border-top:1px solid var(--line);
+    text-align:center;
+  }
+  .future-aside h3{font-size:15px; margin-bottom:6px;}
+  .future-aside p{font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0 0 14px;}
+  .toggle-switch{
+    display:flex; background:var(--mist); border-radius:var(--radius-pill);
+    padding:4px; margin-bottom:16px;
+  }
+  .toggle-switch button{
+    flex:1; border:none; background:transparent; padding:10px;
+    border-radius:var(--radius-pill); font-family:'Inter';
+    font-weight:600; font-size:12.5px; color:var(--ink-soft); cursor:pointer;
+  }
+  .toggle-switch button.active{
+    background:#fff; color:var(--plum);
+    box-shadow:0 6px 14px -8px rgba(91,75,138,0.5);
+  }
+  .laundry-stage{
+    height:120px; border-radius:var(--radius-md);
+    background:linear-gradient(160deg, #f4f1fb, var(--mist));
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:16px; position:relative; overflow:hidden;
+  }
+  .laundry-icon{font-size:44px; transition:opacity .4s ease, transform .4s ease;}
+  .laundry-stage.after .laundry-icon{transform:scale(1.08);}
+  .laundry-sparkle{
+    position:absolute; font-size:24px; opacity:0;
+    transition:opacity .4s ease .1s;
+  }
+  .laundry-stage.after .laundry-sparkle{opacity:1;}
+  .laundry-caption{text-align:center; font-size:13px; color:var(--ink-soft); margin-bottom:18px;}
+
+  .future-panel{display:none;}
+
+  .dashboard{
+    width:100%; background:transparent;
+    border-radius:0; padding:0; box-shadow:none;
+  }
+  .dash-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; flex-wrap:wrap; gap:10px;}
+  .dash-head h2{font-size:24px;}
+  .dash-head p{margin:6px 0 0; color:var(--ink-soft); font-size:14px; line-height:1.5;}
+  .dash-range{
+    font-size:13px; font-weight:500; color:var(--ink-soft);
+    background:transparent; padding:0;
+  }
+  .kpi-row{display:grid; grid-template-columns:repeat(4, 1fr); gap:20px; margin-bottom:32px;}
+  .kpi-card{background:var(--mist); border-radius:var(--radius-md); padding:20px; border:none;}
+  .kpi-card .kpi-label{font-size:12px; color:var(--ink-soft); font-weight:600; margin-bottom:8px;}
+  .kpi-card .kpi-value{font-family:'DM Mono'; font-size:26px; font-weight:500; color:var(--ink);}
+  .kpi-card .kpi-delta{font-size:11.5px; margin-top:6px; font-weight:600;}
+  .kpi-delta.up{color:#3f8f5f;}
+  .kpi-delta.flag{color:var(--peach-deep);}
+  .dash-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:28px;}
+  .panel{background:var(--mist); border:none; border-radius:var(--radius-md); padding:24px;}
+  .panel h3{font-size:15px; margin-bottom:18px; font-weight:700;}
+  .funnel-row{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .funnel-label{width:130px; font-size:12.5px; color:var(--ink-soft); flex-shrink:0;}
+  .funnel-track{flex:1; height:12px; background:#fff; border-radius:99px; overflow:hidden;}
+  .funnel-fill{height:100%; border-radius:99px; background:linear-gradient(90deg, var(--lilac), var(--blue));}
+  .funnel-val{width:44px; text-align:right; font-family:'DM Mono'; font-size:12.5px; flex-shrink:0;}
+  .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+  .bar-label{width:150px; font-size:12.5px; color:var(--ink-soft); flex-shrink:0;}
+  .bar-track{flex:1; height:8px; background:#fff; border-radius:99px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:99px;}
+  .bar-val{width:36px; text-align:right; font-family:'DM Mono'; font-size:12px;}
+  .foot-note{
+    margin-top:22px; font-size:12px; color:var(--ink-soft);
+    line-height:1.65; border-top:1px solid var(--line); padding-top:16px;
+  }
+  .dash-summary{
+    font-size:14px; color:var(--ink-soft); line-height:1.65;
+    margin-bottom:28px; max-width:720px;
+  }
+  .dash-summary strong{color:var(--ink);}
+
+  .debug-panel{
+    background:#1e1a2e; color:#d4cfe8; border-radius:var(--radius-md);
+    margin-bottom:14px; font-size:11px; overflow:hidden;
+  }
+  .debug-panel summary{
+    padding:10px 14px; cursor:pointer; font-weight:600;
+    font-family:'DM Mono'; color:#b8a6e0; user-select:none;
+  }
+  .debug-panel pre{
+    margin:0; padding:10px 14px 14px;
+    font-family:'DM Mono'; font-size:10.5px; line-height:1.5;
+    white-space:pre-wrap; word-break:break-word;
+    border-top:1px solid rgba(184,166,224,0.2);
+    max-height:180px; overflow-y:auto;
+  }
+
+  .redeem-intro{
+    text-align:center; margin-bottom:20px;
+  }
+  .redeem-intro h2{font-size:20px; margin-bottom:8px;}
+  .redeem-intro p{font-size:14px; color:var(--ink-soft); margin:0; line-height:1.5;}
+
+  .hidden{display:none !important;}
+
+  /* ---- Live shelf advisor (landscape split) ---- */
+  .screen.screen-advisor{
+    padding:0;
+    overflow:hidden;
+  }
+  .advisor-layout{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    min-height:0;
+  }
+  .advisor-layout > .topnav{
+    flex-shrink:0;
+    margin:0;
+    padding:6px 14px 4px;
+    position:relative;
+    background:var(--phone-bg);
+    border-bottom:1px solid var(--line);
+  }
+  .advisor-split{
+    display:flex;
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+  }
+  .advisor-left{
+    width:44%;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    border-right:1px solid var(--line);
+    background:linear-gradient(180deg, var(--mist) 0%, var(--phone-bg) 40%);
+  }
+  .advisor-right{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    background:var(--phone-bg);
+  }
+  .advisor-persona{
+    flex-shrink:0;
+    padding:8px 12px 6px;
+    transition:opacity .3s ease;
+  }
+  .advisor-persona .persona-phase{
+    font-size:10px; color:var(--lilac-deep); font-weight:600; margin-bottom:2px;
+  }
+  .advisor-persona .persona-title{
+    font-family:'Quicksand',sans-serif; font-size:13px; font-weight:700;
+    line-height:1.25; margin-bottom:2px;
+  }
+  .advisor-persona .persona-sub{
+    font-size:10.5px; color:var(--ink-soft); line-height:1.35;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .env-signal{
+    font-size:10px; color:var(--ink-soft); padding:0 12px 4px;
+    line-height:1.35; flex-shrink:0;
+  }
+  .advisor-shelf-wrap{
+    flex:1;
+    min-height:0;
+    padding:4px 10px 4px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .shelf-label{
+    font-size:10px; font-weight:600; color:var(--ink-soft);
+    margin-bottom:4px; display:flex; justify-content:space-between; gap:6px;
+  }
+  .shelf-label #shelf-leader-label{
+    font-size:9px; text-align:right; line-height:1.3;
+  }
+  .advisor-left .live-shelf{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .live-shelf{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .advisor-left .shelf-card{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 8px;
+    text-align:left;
+  }
+  .advisor-left .shelf-card .sc-bottle{margin:0; flex-shrink:0;}
+  .advisor-left .shelf-card .sc-bottle svg.bottle{width:28px;height:38px;}
+  .advisor-left .shelf-card .sc-body{flex:1; min-width:0;}
+  .advisor-left .shelf-card .sc-name{min-height:0; margin-bottom:2px; font-size:9.5px;}
+  .advisor-left .shelf-card .sc-family{margin-bottom:3px; font-size:8.5px;}
+  .advisor-left .shelf-card .sc-fit-row{margin-bottom:2px;}
+  .advisor-left .shelf-card .sc-pct{font-size:12px;}
+  .advisor-left .shelf-card .sc-bar{margin-bottom:2px;}
+  .advisor-left .shelf-card .sc-status{font-size:8.5px;}
+  .shelf-card{
+    background:#fff;
+    border-radius:14px;
+    padding:8px 8px 10px;
+    cursor:pointer;
+    border:1.5px solid transparent;
+    transition:border-color .25s, box-shadow .25s, transform .2s;
+    position:relative;
+  }
+  .shelf-card:hover{transform:translateY(-1px);}
+  .shelf-card.leader{
+    border-color:var(--plum);
+    box-shadow:0 6px 18px -8px rgba(91,75,138,0.35);
+  }
+  .shelf-card.rising{
+    animation:shelfGlow .6s ease;
+  }
+  @keyframes shelfGlow{
+    0%{box-shadow:0 0 0 0 rgba(184,166,224,0.5);}
+    70%{box-shadow:0 0 0 6px rgba(184,166,224,0);}
+  }
+  .shelf-card .sc-bottle{text-align:center; line-height:0; margin-bottom:4px;}
+  .shelf-card .sc-bottle svg.bottle{width:36px;height:48px;}
+  .shelf-card .sc-name{
+    font-size:10px; font-weight:700; line-height:1.25;
+    margin-bottom:4px; min-height:26px;
+  }
+  .shelf-card .sc-family{font-size:9px; color:var(--ink-soft); margin-bottom:5px;}
+  .shelf-card .sc-fit-row{
+    display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;
+  }
+  .shelf-card .sc-pct{font-family:'DM Mono'; font-size:13px; font-weight:500; color:var(--plum);}
+  .shelf-card .sc-delta{
+    font-size:9px; font-weight:700; color:#3f8f5f;
+    opacity:0; transition:opacity .3s;
+  }
+  .shelf-card .sc-delta.show{opacity:1;}
+  .shelf-card .sc-delta.down{color:var(--ink-soft);}
+  .shelf-card .sc-bar{
+    height:4px; background:var(--line); border-radius:99px; overflow:hidden; margin-bottom:4px;
+  }
+  .shelf-card .sc-bar-fill{
+    height:100%; border-radius:99px;
+    background:linear-gradient(90deg, var(--current-mood-1), var(--plum));
+    transition:width .6s ease;
+    width:0%;
+  }
+  .shelf-card .sc-status{font-size:9px; font-weight:600; color:var(--ink-soft);}
+  .shelf-card.leader .sc-status{color:var(--plum);}
+  .micro-line{
+    font-size:10px; color:var(--ink-soft); line-height:1.35;
+    padding:5px 12px 6px;
+    min-height:28px;
+    border-top:1px solid var(--line);
+    flex-shrink:0;
+    transition:opacity .3s;
+  }
+  .micro-line strong{color:var(--ink); font-weight:600;}
+  .style-scan-card{
+    flex-shrink:0;
+    padding:8px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--mist);
+  }
+  .style-scan-row{
+    display:flex; align-items:center; gap:8px;
+  }
+  .scan-thumb{
+    width:40px; height:40px; border-radius:10px;
+    background:var(--line);
+    flex-shrink:0;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  .scan-thumb img{width:100%; height:100%; object-fit:cover;}
+  .scan-thumb.has-img{background:#fff;}
+  .scan-copy{flex:1; min-width:0;}
+  .scan-copy .scan-label{
+    font-size:10px; font-weight:600; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px;
+  }
+  .scan-copy .scan-hint{font-size:11px; color:var(--ink-soft); line-height:1.35; margin:0;}
+  .scan-copy .scan-hint strong{color:var(--plum); font-weight:600;}
+  .btn-scan{
+    flex-shrink:0;
+    border:none; cursor:pointer;
+    background:linear-gradient(135deg, var(--plum), var(--lilac-deep));
+    color:#fff;
+    font-family:'Inter'; font-weight:600; font-size:11px;
+    padding:8px 12px; border-radius:var(--radius-pill);
+    white-space:nowrap;
+    transition:transform .15s;
+  }
+  .btn-scan:hover{transform:scale(1.02);}
+  .btn-scan:focus-visible{outline:2px solid var(--plum); outline-offset:2px;}
+  .btn-scan.secondary{
+    background:#fff; color:var(--plum);
+    border:1.5px solid var(--line);
+  }
+  .advisor-questions{
+    flex:1; min-height:0; overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    padding:8px 14px 24px;
+  }
+  .advisor-questions .progress-row{margin:0 0 10px;}
+  .advisor-questions .eyebrow{font-size:10px; margin-bottom:4px;}
+  .advisor-questions .q-title{font-size:15px !important; margin-bottom:4px;}
+  .advisor-questions .q-sub{font-size:11.5px !important; margin-bottom:8px !important;}
+  .advisor-questions .opt-list{gap:7px;}
+  .advisor-questions .opt-row{padding:10px 12px;}
+  .advisor-questions .opt-row .label{font-size:13px;}
+
+  /* Style scan overlay */
+  .scan-overlay{
+    position:absolute; inset:0; z-index:40;
+    background:#141225;
+    display:none; flex-direction:column;
+  }
+  .scan-overlay.open{display:flex;}
+  .scan-overlay-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; color:#fff;
+  }
+  .scan-overlay-head button{
+    border:none; background:rgba(255,255,255,0.12);
+    color:#fff; font-size:13px; font-weight:600;
+    padding:8px 14px; border-radius:var(--radius-pill); cursor:pointer;
+  }
+  .scan-viewport{
+    flex:1; position:relative; margin:0 16px;
+    border-radius:18px; overflow:hidden;
+    background:#0a0812;
+    min-height:0;
+  }
+  .scan-viewport video,
+  .scan-viewport .scan-preview{
+    width:100%; height:100%; object-fit:cover;
+    display:block;
+  }
+  .scan-frame{
+    position:absolute; inset:16px;
+    border:2px solid rgba(255,255,255,0.7);
+    border-radius:14px;
+    box-shadow:0 0 0 9999px rgba(0,0,0,0.35);
+    pointer-events:none;
+  }
+  .scan-frame::before{
+    content:'Align outfit in frame';
+    position:absolute; bottom:-28px; left:0; right:0;
+    text-align:center; font-size:11px; color:rgba(255,255,255,0.75);
+  }
+  .scan-processing{
+    position:absolute; inset:0;
+    background:rgba(20,18,37,0.85);
+    display:none; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; color:#fff;
+  }
+  .scan-processing.show{display:flex;}
+  .scan-spinner{
+    width:32px; height:32px; border-radius:50%;
+    border:3px solid rgba(255,255,255,0.2);
+    border-top-color:#fff;
+    animation:spin .8s linear infinite;
+  }
+  .scan-overlay-foot{
+    padding:14px 16px 20px;
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .scan-overlay-foot button{
+    flex:1; min-width:100px;
+    border:none; cursor:pointer;
+    font-family:'Inter'; font-weight:600; font-size:13px;
+    padding:12px; border-radius:var(--radius-md);
+  }
+  .scan-capture-btn{background:#fff; color:var(--plum);}
+  .scan-demo-btn{background:rgba(255,255,255,0.15); color:#fff;}
+  #scan-file-input{display:none;}
+  .result-shelf-compact{margin:16px 0;}
+  .result-shelf-compact .live-shelf{gap:6px;}
+  .presenter-note{
+    font-size:10px; color:var(--ink-soft); opacity:0.65;
+    margin-top:12px; line-height:1.4;
+  }
+
+  /* Product drawer */
+  .drawer-backdrop{
+    position:absolute; inset:0; z-index:30;
+    background:rgba(43,38,64,0.35);
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .drawer-backdrop.open{display:flex;}
+  .product-drawer{
+    background:var(--phone-bg);
+    border-radius:22px 22px 0 0;
+    width:100%; max-height:78%;
+    overflow-y:auto;
+    padding:20px 20px 36px;
+    transform:translateY(100%);
+    transition:transform .32s ease;
+  }
+  .drawer-backdrop.open .product-drawer{transform:translateY(0);}
+  .drawer-handle{
+    width:36px; height:4px; background:var(--line);
+    border-radius:99px; margin:0 auto 14px;
+  }
+  .drawer-fit{font-family:'DM Mono'; font-size:22px; font-weight:500; color:var(--plum); margin-bottom:4px;}
+  .drawer-name{font-family:'Quicksand'; font-size:18px; font-weight:700; margin-bottom:12px;}
+  .drawer-section{font-size:13px; color:var(--ink-soft); line-height:1.55; margin-bottom:14px;}
+  .drawer-section h4{font-size:12px; font-weight:600; color:var(--ink); margin:0 0 4px;}
+  .drawer-close{
+    width:100%; margin-top:8px;
+    border:none; background:var(--mist); color:var(--plum);
+    font-family:'Inter'; font-weight:600; font-size:14px;
+    padding:14px; border-radius:var(--radius-md); cursor:pointer;
+  }
+
+  @media (max-width:480px){
+    .page{padding:28px 16px 40px;}
+    .kpi-row{grid-template-columns:1fr 1fr;}
+    .dash-grid{grid-template-columns:1fr;}
+    .story-pillars{grid-template-columns:1fr;}
+    .story-signal-grid{grid-template-columns:1fr;}
+    .story-flow-steps{flex-direction:column;}
+    .story-hero h1{font-size:30px;}
+  }
+
+  /* ── Platform story landing ── */
+  .story-view{animation:storyFade .5s ease;}
+  @keyframes storyFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .story-hero{
+    text-align:center;
+    padding:12px 0 48px;
+    position:relative;
+  }
+  .story-hero::before{
+    content:''; position:absolute; inset:-20px -40px 40px;
+    background:radial-gradient(ellipse 70% 60% at 50% 0%, rgba(184,166,224,0.22), transparent 70%);
+    pointer-events:none; z-index:-1;
+  }
+  .story-brand{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:12px; font-weight:600; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--plum); margin-bottom:20px;
+  }
+  .story-brand span{
+    width:28px; height:1px; background:linear-gradient(90deg, transparent, var(--lilac));
+  }
+  .story-hero h1{
+    font-size:clamp(32px, 5.5vw, 48px);
+    line-height:1.12;
+    max-width:780px;
+    margin:0 auto 18px;
+    letter-spacing:-0.02em;
+  }
+  .story-hero .story-lead{
+    font-size:18px; line-height:1.7;
+    color:var(--ink-soft);
+    max-width:620px;
+    margin:0 auto 32px;
+  }
+  .story-hero-cta{
+    display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+  }
+  .story-btn{
+    border:none; cursor:pointer;
+    font-family:'Inter'; font-weight:600; font-size:14px;
+    padding:14px 28px; border-radius:var(--radius-pill);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .story-btn:focus-visible{outline:2px solid var(--plum); outline-offset:2px;}
+  .story-btn-primary{
+    background:linear-gradient(135deg, var(--plum), var(--lilac-deep));
+    color:#fff;
+    box-shadow:0 12px 28px -10px rgba(91,75,138,0.45);
+  }
+  .story-btn-primary:hover{transform:translateY(-1px);}
+  .story-btn-ghost{
+    background:rgba(255,255,255,0.7);
+    color:var(--plum);
+    border:1.5px solid var(--line);
+  }
+  .story-chain{
+    background:rgba(255,255,255,0.55);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:36px 32px 32px;
+    margin-bottom:40px;
+    backdrop-filter:blur(8px);
+  }
+  .story-chain-label{
+    font-size:11px; font-weight:700; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--lilac-deep);
+    margin-bottom:24px;
+  }
+  .story-logic{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:0;
+    position:relative;
+  }
+  .story-logic::before{
+    content:''; position:absolute;
+    top:28px; left:12%; right:12%; height:2px;
+    background:linear-gradient(90deg, var(--lilac), var(--blue), var(--peach));
+    opacity:0.35;
+  }
+  .logic-step{
+    text-align:center; padding:0 12px;
+    position:relative;
+  }
+  .logic-num{
+    width:56px; height:56px; border-radius:50%;
+    background:#fff; border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px;
+    font-family:'Quicksand'; font-weight:700; font-size:13px;
+    color:var(--plum);
+    position:relative; z-index:1;
+    box-shadow:0 4px 14px -4px rgba(91,75,138,0.15);
+  }
+  .logic-step:first-child .logic-num{border-color:var(--lilac); background:var(--mist);}
+  .logic-step h3{
+    font-size:15px; margin-bottom:8px; line-height:1.3;
+  }
+  .logic-step p{
+    font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0;
+  }
+  .story-section{margin-bottom:48px;}
+  .story-section-head{
+    max-width:640px; margin-bottom:28px;
+  }
+  .story-section-head h2{
+    font-size:clamp(24px, 3.5vw, 30px);
+    margin-bottom:10px;
+  }
+  .story-section-head p{
+    font-size:15px; line-height:1.65; color:var(--ink-soft); margin:0;
+  }
+  .story-pillars{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+  }
+  .story-pillar{
+    background:#fff;
+    border-radius:var(--radius-md);
+    padding:24px 22px;
+    border:1px solid var(--line);
+    transition:box-shadow .25s;
+  }
+  .story-pillar:hover{box-shadow:var(--shadow-soft);}
+  .pillar-icon{
+    width:44px; height:44px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; margin-bottom:14px;
+  }
+  .pillar-icon.identity{background:linear-gradient(135deg,#ede8f8,#d9cff0);}
+  .pillar-icon.decision{background:linear-gradient(135deg,#e3f2f8,#c5e4f0);}
+  .pillar-icon.moment{background:linear-gradient(135deg,#fdf0e4,#f3d4b0);}
+  .story-pillar h3{font-size:16px; margin-bottom:8px;}
+  .story-pillar p{font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0;}
+  .story-flow-card{
+    background:linear-gradient(160deg, #fff 0%, var(--mist) 100%);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:32px 28px;
+  }
+  .story-flow-meta{
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    margin-bottom:24px;
+  }
+  .flow-timer{
+    font-family:'DM Mono'; font-size:28px; font-weight:500;
+    color:var(--plum);
+  }
+  .flow-timer span{font-size:14px; color:var(--ink-soft); font-family:'Inter';}
+  .flow-tag{
+    font-size:11px; font-weight:600; letter-spacing:0.06em;
+    text-transform:uppercase;
+    background:#fff; border:1px solid var(--line);
+    padding:6px 12px; border-radius:var(--radius-pill);
+    color:var(--ink-soft);
+  }
+  .story-flow-steps{
+    display:flex; gap:10px; align-items:stretch;
+  }
+  .flow-step{
+    flex:1; background:#fff;
+    border-radius:14px; padding:16px 14px;
+    border:1px solid var(--line);
+    text-align:center;
+  }
+  .flow-step .fs-time{
+    font-family:'DM Mono'; font-size:11px;
+    color:var(--lilac-deep); font-weight:500;
+    margin-bottom:8px;
+  }
+  .flow-step .fs-title{
+    font-family:'Quicksand'; font-weight:700;
+    font-size:13px; margin-bottom:6px; line-height:1.3;
+  }
+  .flow-step .fs-desc{font-size:11.5px; color:var(--ink-soft); line-height:1.45; margin:0;}
+  .flow-arrow{
+    display:flex; align-items:center; color:var(--lilac);
+    font-size:18px; flex-shrink:0;
+  }
+  .story-signal-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:18px;
+  }
+  .signal-card{
+    background:#fff;
+    border-radius:var(--radius-md);
+    padding:22px 20px;
+    border:1px solid var(--line);
+    position:relative; overflow:hidden;
+  }
+  .signal-card::after{
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:3px;
+  }
+  .signal-card.env::after{background:linear-gradient(90deg,#9fc9e0,#6fa9c9);}
+  .signal-card.style::after{background:linear-gradient(90deg,#e9d3ef,#b8a6e0);}
+  .signal-card.persona::after{background:linear-gradient(90deg,#f3caa3,#e8a56b);}
+  .signal-card h3{font-size:15px; margin-bottom:8px;}
+  .signal-card p{font-size:13px; color:var(--ink-soft); line-height:1.6; margin:0 0 12px;}
+  .signal-fact{
+    font-size:11px; font-weight:600;
+    color:var(--plum);
+    background:var(--mist);
+    padding:8px 10px; border-radius:10px;
+    line-height:1.45;
+  }
+  .story-physical{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:32px;
+    align-items:center;
+    background:linear-gradient(135deg, rgba(91,75,138,0.06) 0%, rgba(159,201,224,0.12) 100%);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:36px 32px;
+  }
+  .story-physical-copy h2{font-size:26px; margin-bottom:12px;}
+  .story-physical-copy p{
+    font-size:14px; line-height:1.65; color:var(--ink-soft);
+    margin:0 0 14px;
+  }
+  .story-physical-copy ul{
+    margin:0; padding-left:18px;
+    font-size:13px; color:var(--ink-soft); line-height:1.7;
+  }
+
+  /* Interactive diffuser demo */
+  .diffuser-demo{
+    background:#fff;
+    border-radius:24px;
+    padding:20px 18px 18px;
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-soft);
+  }
+  .diffuser-demo-label{
+    font-size:10px; font-weight:700; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--lilac-deep);
+    margin-bottom:10px; text-align:center;
+  }
+  .diffuser-scene{
+    position:relative;
+    height:260px;
+    border-radius:18px;
+    overflow:hidden;
+    background:linear-gradient(180deg, #ebe6f5 0%, #dceef5 45%, #f4f1fa 100%);
+    margin-bottom:14px;
+  }
+  .diffuser-scene::before{
+    content:'';
+    position:absolute; inset:0;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,0.5) 0%, transparent 30%),
+      radial-gradient(ellipse 80% 50% at 50% 100%, rgba(91,75,138,0.08), transparent);
+    pointer-events:none;
+  }
+  .bay-tag{
+    position:absolute; top:10px; left:12px;
+    font-size:9px; font-weight:700; letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:rgba(255,255,255,0.85);
+    padding:4px 8px; border-radius:6px;
+    color:var(--ink-soft); z-index:2;
+  }
+  .bay-shelf-hint{
+    position:absolute; top:28px; left:12px; right:12px;
+    height:36px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.8);
+    z-index:1;
+  }
+  .bay-shelf-hint::after{
+    content:'Comfort bay · SKU row';
+    position:absolute; bottom:4px; left:8px;
+    font-size:8px; color:var(--ink-soft); opacity:0.7;
+  }
+  .shopper-figure{
+    position:absolute; bottom:18px; right:16px;
+    width:44px; height:72px; z-index:3;
+    opacity:0.85;
+  }
+  .shopper-figure .sf-head{
+    width:18px; height:18px; border-radius:50%;
+    background:var(--ink-soft); margin:0 auto 2px;
+    opacity:0.35;
+  }
+  .shopper-figure .sf-body{
+    width:28px; height:36px; margin:0 auto;
+    border-radius:14px 14px 6px 6px;
+    background:var(--plum); opacity:0.2;
+  }
+  .shopper-figure .sf-note{
+    position:absolute; bottom:-14px; left:50%; transform:translateX(-50%);
+    font-size:8px; white-space:nowrap; color:var(--ink-soft);
+  }
+  .diffuser-scene.diffusing .shopper-figure .sf-note{
+    color:var(--plum); font-weight:600;
+  }
+  .diffuser-scene.diffusing .shopper-figure{
+    animation:shopperLean 2.5s ease-in-out infinite;
+  }
+  @keyframes shopperLean{
+    0%,100%{transform:translateX(0);}
+    50%{transform:translateX(-4px);}
+  }
+  .diffuser-platform{
+    position:absolute; bottom:24px; left:50%;
+    transform:translateX(-50%);
+    z-index:4;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .diffuser-unit{
+    width:88px;
+    position:relative;
+    transition:filter .4s;
+  }
+  .diffuser-unit.active{
+    filter:drop-shadow(0 8px 20px rgba(91,75,138,0.25));
+  }
+  .diffuser-cap{
+    width:36px; height:12px; margin:0 auto -2px;
+    background:var(--diffuser-accent, var(--plum));
+    border-radius:6px 6px 2px 2px;
+    position:relative; z-index:2;
+    transition:background .4s;
+  }
+  .diffuser-body{
+    width:88px; height:100px;
+    background:linear-gradient(180deg, #fff 0%, #f0ecf8 100%);
+    border-radius:16px;
+    border:2px solid var(--line);
+    position:relative;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-end;
+    padding-bottom:12px;
+    box-shadow:inset 0 -8px 16px rgba(91,75,138,0.06);
+  }
+  .diffuser-vent{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:32px; height:8px;
+    background:var(--line);
+    border-radius:4px;
+  }
+  .diffuser-led{
+    width:48px; height:4px; border-radius:99px;
+    background:var(--diffuser-glow, var(--lilac));
+    margin-bottom:8px;
+    transition:background .4s, box-shadow .4s;
+  }
+  .diffuser-unit.active .diffuser-led{
+    box-shadow:0 0 12px var(--diffuser-glow, var(--lilac));
+    animation:ledPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes ledPulse{
+    0%,100%{opacity:1;} 50%{opacity:0.55;}
+  }
+  .diffuser-base{
+    width:104px; height:10px;
+    background:linear-gradient(180deg, #e7e1f4, #d5cde8);
+    border-radius:0 0 8px 8px;
+    margin-top:-2px;
+  }
+  .diffuser-particles{
+    position:absolute;
+    bottom:100px; left:50%;
+    transform:translateX(-50%);
+    width:120px; height:140px;
+    pointer-events:none;
+    z-index:5;
+  }
+  .diffuser-particle{
+    position:absolute;
+    width:var(--sz, 8px); height:var(--sz, 8px);
+    border-radius:50%;
+    background:var(--diffuser-mist, rgba(184,166,224,0.55));
+    bottom:0; left:50%;
+    opacity:0;
+    filter:blur(1px);
+  }
+  .diffuser-scene.diffusing .diffuser-particle{
+    animation:scentRise var(--dur, 2.4s) ease-out infinite;
+    animation-delay:var(--delay, 0s);
+  }
+  @keyframes scentRise{
+    0%{opacity:0; transform:translateX(-50%) translateY(0) scale(0.4);}
+    15%{opacity:0.75;}
+    100%{opacity:0; transform:translateX(calc(-50% + var(--drift, 0px))) translateY(-130px) scale(1.3);}
+  }
+  .diffuser-scene-wave{
+    position:absolute; bottom:80px; left:50%;
+    transform:translateX(-50%) scale(0.6);
+    width:100px; height:100px;
+    border-radius:50%;
+    background:radial-gradient(circle, var(--diffuser-mist, rgba(184,166,224,0.35)) 0%, transparent 70%);
+    opacity:0; pointer-events:none; z-index:2;
+  }
+  .diffuser-scene.diffusing .diffuser-scene-wave{
+    animation:scentWave 2s ease-out infinite;
+  }
+  @keyframes scentWave{
+    0%{opacity:0; transform:translateX(-50%) scale(0.5);}
+    30%{opacity:0.5;}
+    100%{opacity:0; transform:translateX(-50%) scale(1.8);}
+  }
+  .diffuser-status{
+    text-align:center;
+    margin-bottom:12px;
+    min-height:44px;
+  }
+  .diffuser-status .ds-phase{
+    font-size:10px; font-weight:600; color:var(--lilac-deep);
+    text-transform:uppercase; letter-spacing:0.06em;
+    margin-bottom:3px;
+  }
+  .diffuser-status .ds-scent{
+    font-family:'Quicksand'; font-weight:700;
+    font-size:16px; color:var(--plum);
+    margin-bottom:2px;
+  }
+  .diffuser-status .ds-meta{
+    font-size:11px; color:var(--ink-soft);
+  }
+  .diffuser-picks{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .diffuser-pick{
+    border:1.5px solid var(--line);
+    background:var(--mist);
+    border-radius:10px;
+    padding:7px 8px;
+    cursor:pointer;
+    text-align:left;
+    font-family:'Inter';
+    transition:border-color .2s, background .2s, transform .15s;
+  }
+  .diffuser-pick:hover{transform:translateY(-1px);}
+  .diffuser-pick:focus-visible{outline:2px solid var(--plum); outline-offset:2px;}
+  .diffuser-pick.active{
+    border-color:var(--plum);
+    background:#fff;
+    box-shadow:0 4px 12px -6px rgba(91,75,138,0.3);
+  }
+  .diffuser-pick .dp-name{
+    font-size:10px; font-weight:700; line-height:1.25;
+    display:block; margin-bottom:2px;
+  }
+  .diffuser-pick .dp-fit{
+    font-family:'DM Mono'; font-size:9px; color:var(--ink-soft);
+  }
+  .diffuser-play{
+    width:100%;
+    border:none; cursor:pointer;
+    font-family:'Inter'; font-weight:600; font-size:13px;
+    padding:12px; border-radius:var(--radius-md);
+    background:linear-gradient(135deg, var(--plum), var(--lilac-deep));
+    color:#fff;
+    transition:transform .15s, opacity .2s;
+  }
+  .diffuser-play:hover:not(:disabled){transform:translateY(-1px);}
+  .diffuser-play:disabled{opacity:0.55; cursor:wait;}
+  .diffuser-play.playing{
+    background:linear-gradient(135deg, #3f8f5f, #5aab7a);
+  }
+  .diffuser-footnote{
+    font-size:10px; color:var(--ink-soft);
+    text-align:center; margin:10px 0 0;
+    line-height:1.4;
+  }
+  .story-close{
+    text-align:center;
+    padding:40px 24px 8px;
+    border-top:1px solid var(--line);
+    margin-top:16px;
+  }
+  .story-close h2{font-size:24px; margin-bottom:10px;}
+  .story-close p{
+    font-size:15px; color:var(--ink-soft);
+    max-width:480px; margin:0 auto 24px; line-height:1.6;
+  }
+  .story-foot{
+    text-align:center;
+    font-size:11px; color:var(--ink-soft);
+    opacity:0.7; margin-top:32px;
+  }
+  @media (max-width:900px){
+    .story-logic{grid-template-columns:1fr 1fr; gap:24px;}
+    .story-logic::before{display:none;}
+    .story-physical{grid-template-columns:1fr;}
+  }
+  @media (max-width:600px){
+    .story-logic{grid-template-columns:1fr;}
+    .story-flow-steps{flex-direction:column;}
+    .flow-arrow{transform:rotate(90deg); justify-content:center;}
+  }
+</style>
+</head>
+<body>
+
+<div class="page page-wide" id="page-root">
+
+  <nav class="page-nav" role="tablist" aria-label="Switch view">
+    <button id="tab-story" class="active" onclick="switchView('story')">Platform vision</button>
+    <button id="tab-proto" onclick="switchView('proto')">Shopper experience</button>
+    <button id="tab-dash" onclick="switchView('dash')">Pilot metrics</button>
+  </nav>
+
+  <!-- PLATFORM STORY LANDING -->
+  <div id="story-view" class="story-view">
+    <header class="story-hero">
+      <div class="story-brand"><span></span>Comfort Scent Studio<span></span></div>
+      <h1>Scent intelligence for the fabric care aisle</h1>
+      <p class="story-lead">A professional platform that turns laundry choices into identity signals — then matches the right Comfort variant in under 60 seconds, with sensory proof at the shelf.</p>
+      <div class="story-hero-cta">
+        <button class="story-btn story-btn-primary" onclick="switchView('proto')">See the live prototype</button>
+        <button class="story-btn story-btn-ghost" onclick="switchView('dash')">View pilot metrics</button>
+      </div>
+    </header>
+
+    <section class="story-chain" aria-labelledby="logic-title">
+      <div class="story-chain-label" id="logic-title">The logic chain</div>
+      <div class="story-logic">
+        <div class="logic-step">
+          <div class="logic-num">01</div>
+          <h3>User insight</h3>
+          <p>Shoppers don't choose fabric care by chemistry. They choose how clothes make them <em>feel</em> — and scent is the social signal others notice first.</p>
+        </div>
+        <div class="logic-step">
+          <div class="logic-num">02</div>
+          <h3>Identity category</h3>
+          <p>Fresh, gentle, floral, confident — each maps to a personal identity shoppers already carry. Comfort sits at the intersection of laundry ritual and self-expression.</p>
+        </div>
+        <div class="logic-step">
+          <div class="logic-num">03</div>
+          <h3>Category pressure</h3>
+          <p>The aisle demands a fast decision. Too many variants, similar packaging, and a 30–60 second window before habit or confusion wins.</p>
+        </div>
+        <div class="logic-step">
+          <div class="logic-num">04</div>
+          <h3>Platform response</h3>
+          <p>Scent Studio collapses education, fit, and trial into one QR moment — live shelf, real signals, physical scent proof.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-section">
+      <div class="story-section-head">
+        <h2>Why scent is the connective tissue</h2>
+        <p>Fabric care is functional on the label but emotional in the basket. Scent is how laundry becomes a personal identity category — and a social one. Clothes carry fragrance into every room, meeting, and family moment. Comfort doesn't just clean; it finishes the story the shopper tells about themselves.</p>
+      </div>
+      <div class="story-pillars">
+        <article class="story-pillar">
+          <div class="pillar-icon identity">◈</div>
+          <h3>Personal identity</h3>
+          <p>"I want to feel fresh and put-together" or "I want home to smell welcoming" — scent preference reveals persona faster than any SKU comparison.</p>
+        </article>
+        <article class="story-pillar">
+          <div class="pillar-icon decision">◎</div>
+          <h3>Social signal</h3>
+          <p>Fragrance on fabric is noticed by others before it's articulated. Shoppers are buying confidence, warmth, or elegance — not just rinse-cycle performance.</p>
+        </article>
+        <article class="story-pillar">
+          <div class="pillar-icon moment">◇</div>
+          <h3>In-store moment</h3>
+          <p>At the bay, there is no time for a quiz. The category needs a shortcut: read the shopper, surface the right variant, and let them decide in seconds.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="story-section">
+      <div class="story-section-head">
+        <h2>Designed for a 30–60 second aisle environment</h2>
+        <p>Every second at shelf is borrowed from the shopping trip. Scent Studio is built as a Product Fit Advisor — not a chatbot, not a long form — that respects retail reality.</p>
+      </div>
+      <div class="story-flow-card">
+        <div class="story-flow-meta">
+          <div class="flow-timer">30–60<span>s</span></div>
+          <span class="flow-tag">QR-first · No login</span>
+          <span class="flow-tag">Live shelf · Parallel discovery</span>
+          <span class="flow-tag">Sample fulfilment at bay</span>
+        </div>
+        <div class="story-flow-steps">
+          <div class="flow-step">
+            <div class="fs-time">0–5s</div>
+            <div class="fs-title">Scan &amp; shelf appears</div>
+            <p class="fs-desc">All Comfort variants at 0% fit. The shopper sees the full bay digitally before answering.</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="fs-time">5–40s</div>
+            <div class="fs-title">Five guided signals</div>
+            <p class="fs-desc">Mission, scent feeling, fabric, drying, intensity — fit levels rise in real time. Tap any product anytime.</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="fs-time">40–50s</div>
+            <div class="fs-title">Persona + best match</div>
+            <p class="fs-desc">A scent persona emerges with clear reason codes. Alternative shown. Shelf cue for physical pickup.</p>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">
+            <div class="fs-time">50–60s</div>
+            <div class="fs-title">Smell &amp; sample</div>
+            <p class="fs-desc">Connected diffuser releases the matched scent profile. BA hands sample. Decision closed at shelf.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-section">
+      <div class="story-section-head">
+        <h2>Signals that make advice feel intelligent</h2>
+        <p>Short inputs alone are powerful. Scent Studio layers contextual facts — responsibly, claim-safe — so recommendations feel aware of the shopper's world, not generic.</p>
+      </div>
+      <div class="story-signal-grid">
+        <article class="signal-card env">
+          <h3>Environment API</h3>
+          <p>Live humidity and temperature from Open-Meteo contextualise drying conditions. On humid days, indoor-drying friendly variants rise — without overclaiming product performance.</p>
+          <div class="signal-fact">Example: "Humid weather detected. Indoor-drying friendly options are slightly rising."</div>
+        </article>
+        <article class="signal-card style">
+          <h3>Style / outfit scan</h3>
+          <p>Optional camera scan reads wardrobe aesthetic — minimal, soft, structured — as an inspiration signal only. It nudges fit; it does not replace shopper inputs.</p>
+          <div class="signal-fact">Example: "Your outfit leans minimal and soft. Pure Gentle Care rises as an inspiration match."</div>
+        </article>
+        <article class="signal-card persona">
+          <h3>Persona resolution</h3>
+          <p>Five scent personas — Everyday Refresher, Gentle Homemaker, Fresh Routine Optimizer, and more — bridge laundry behaviour to social identity language the brand can own.</p>
+          <div class="signal-fact">Persona emerges step by step: "You may be The Fresh Routine Optimizer."</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="story-section">
+      <div class="story-physical">
+        <div class="story-physical-copy">
+          <h2>From digital fit to physical scent</h2>
+          <p>The gap in fabric care is sensory — shoppers cannot smell the bottle through packaging. Scent Studio closes that gap by connecting the recommended Comfort profile to a physical diffuser at the stand.</p>
+          <p>Think of it as a Comfort scent capsule experience: the matched variant triggers a calibrated fragrance release on a connected device — similar to how premium beauty uses essential-oil stations for trial.</p>
+          <p><strong>Try the interactive demo →</strong> select a product match and release scent to see how the bay moment works.</p>
+          <ul>
+            <li>Best-match SKU maps to a scent profile on the in-store diffuser</li>
+            <li>Shopper smells the recommendation before they buy — reducing regret, increasing conversion</li>
+            <li>Future path: Comfort Scent Diffuser as a loyalty and home-extension touchpoint</li>
+            <li>Claim-safe copy throughout — inspiration signals, not medical or performance claims</li>
+          </ul>
+        </div>
+        <div class="diffuser-demo" id="diffuser-demo">
+          <div class="diffuser-demo-label">Interactive · Comfort Scent Diffuser</div>
+          <div class="diffuser-scene" id="diffuser-scene">
+            <span class="bay-tag">Aeon · Bay 4</span>
+            <div class="bay-shelf-hint"></div>
+            <div class="diffuser-scene-wave" id="diffuser-wave"></div>
+            <div class="diffuser-particles" id="diffuser-particles"></div>
+            <div class="diffuser-platform">
+              <div class="diffuser-unit" id="diffuser-unit">
+                <div class="diffuser-cap"></div>
+                <div class="diffuser-body">
+                  <div class="diffuser-vent"></div>
+                  <div class="diffuser-led"></div>
+                </div>
+                <div class="diffuser-base"></div>
+              </div>
+            </div>
+            <div class="shopper-figure" aria-hidden="true">
+              <div class="sf-head"></div>
+              <div class="sf-body"></div>
+              <span class="sf-note">Sampling scent</span>
+            </div>
+          </div>
+          <div class="diffuser-status" id="diffuser-status">
+            <div class="ds-phase">Select a match</div>
+            <div class="ds-scent">Comfort Fresh Sky</div>
+            <div class="ds-meta">87% fit · tap Release to diffuse</div>
+          </div>
+          <div class="diffuser-picks" id="diffuser-picks"></div>
+          <button type="button" class="diffuser-play" id="diffuser-play-btn" onclick="playDiffuserDemo()">Release recommended scent</button>
+          <p class="diffuser-footnote">Prototype concept — matched SKU triggers calibrated scent release at the stand</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-close">
+      <h2>From insight to aisle impact</h2>
+      <p>Scent Studio is the platform layer: identity-led advice, live shelf engagement, contextual signals, and sensory proof — built for Unilever's fabric care brands to win the decision in under a minute.</p>
+      <button class="story-btn story-btn-primary" onclick="switchView('proto')">Explore the shopper prototype</button>
+    </section>
+
+    <p class="story-foot">SEC Demo · Comfort Scent Studio · Aeon Tân Phú pilot · Illustrative prototype for brand review</p>
+  </div>
+
+  <header class="page-hero hidden" id="page-hero">
+    <p class="overline">SEC Demo · Comfort Scent Studio</p>
+    <h1>In-store Product Fit Advisor</h1>
+    <p class="lead">A shelf-side experience that helps shoppers find the right Comfort variant — scanned at the bay, matched in under a minute, fulfilled with a sample on the spot.</p>
+  </header>
+
+  <div class="proto-wrap hidden" id="proto-view">
+  <div class="phone-shell">
+  <div class="phone-screen">
+    <div class="statusbar">
+      <span>9:41</span>
+      <div class="dot-cluster">
+        <span>●●●</span><span style="margin-left:4px;">Wi‑Fi</span><span style="margin-left:4px;">86%</span>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- LANDING -->
+      <section class="screen active has-foot" data-screen="landing">
+        <div class="screen-body">
+          <div class="landing-hero">
+            <p class="context-line">Aeon · Fabric care · Bay 4</p>
+            <div class="landing-bloom"></div>
+            <h1 class="headline-xl">Find the right Comfort for your laundry today</h1>
+            <p class="body-copy" style="max-width:290px;">Watch the Comfort shelf respond as you share your laundry profile — then find your match on bay.</p>
+          </div>
+        </div>
+        <div class="screen-foot">
+          <button class="btn-primary" onclick="go('intro')">Continue</button>
+        </div>
+      </section>
+
+      <!-- INTRO -->
+      <section class="screen has-foot" data-screen="intro">
+        <div class="topnav"><button class="back-btn" onclick="go('landing')">←</button><span></span><span class="spacer"></span></div>
+        <div class="screen-body">
+          <h2 class="q-title">Live Comfort shelf</h2>
+          <p class="q-sub">All variants start at 0% fit. Each answer updates the shelf in real time — tap any bottle to explore.</p>
+          <ol class="intro-steps">
+            <li><strong>Scan</strong> the QR at the shelf standee</li>
+            <li><strong>Scan outfit</strong> (optional) for a style inspiration nudge</li>
+            <li><strong>Answer</strong> five guided inputs — shelf updates live</li>
+            <li><strong>Tap</strong> any bottle to explore fit anytime</li>
+          </ol>
+          <p class="context-note">No account needed. A team member can help if you prefer.</p>
+        </div>
+        <div class="screen-foot">
+          <button class="btn-primary" onclick="startAdvisor()">Begin</button>
+        </div>
+      </section>
+
+      <!-- LIVE ADVISOR (landscape: shelf left · quiz right) -->
+      <section class="screen screen-advisor" data-screen="advisor">
+        <div class="advisor-layout">
+          <div class="topnav">
+            <button class="back-btn" onclick="exitAdvisor()">←</button>
+            <span style="font-size:12px;font-weight:600;color:var(--ink-soft);">Fit advisor</span>
+            <span class="spacer"></span>
+          </div>
+          <div class="advisor-split">
+            <div class="advisor-left">
+              <div class="advisor-persona" id="persona-card">
+                <div class="persona-phase" id="persona-phase">Reading your profile</div>
+                <div class="persona-title" id="persona-title">Still learning your scent profile.</div>
+                <div class="persona-sub" id="persona-sub"></div>
+              </div>
+              <div class="env-signal hidden" id="env-signal"></div>
+              <div class="advisor-shelf-wrap">
+                <div class="shelf-label"><span>Comfort shelf</span><span id="shelf-leader-label"></span></div>
+                <div class="live-shelf" id="live-shelf"></div>
+              </div>
+              <div class="micro-line" id="micro-line">Tap a product to explore · all start at 0% fit</div>
+            </div>
+            <div class="advisor-right">
+              <div class="style-scan-card" id="style-scan-card">
+                <div class="style-scan-row">
+                  <div class="scan-thumb" id="scan-thumb">👔</div>
+                  <div class="scan-copy">
+                    <div class="scan-label">Outfit signal</div>
+                    <p class="scan-hint" id="scan-hint">Scan what you're wearing for an inspiration fit nudge.</p>
+                  </div>
+                  <button type="button" class="btn-scan" id="btn-scan" onclick="openStyleScan()">Scan outfit</button>
+                </div>
+              </div>
+              <div class="advisor-questions">
+                <div class="progress-row" id="progress-row"></div>
+                <div class="eyebrow" id="q-eyebrow">Question</div>
+                <h2 class="q-title" id="q-title"></h2>
+                <p class="q-sub" id="q-sub"></p>
+                <div id="q-options"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section class="screen has-foot" data-screen="result">
+        <div class="screen-body">
+          <div id="debug-panel-wrap" class="hidden"></div>
+
+          <div class="advisor-persona" style="border-radius:14px;margin-bottom:16px;border:1px solid var(--line);">
+            <div class="persona-phase" id="result-persona-phase">Final persona</div>
+            <div class="persona-title" id="result-persona-title"></div>
+            <div class="persona-sub" id="result-persona-sub"></div>
+          </div>
+
+          <div class="result-card">
+            <div class="rec-label">Best match</div>
+            <div class="fit-score-row">
+              <div class="fit-score-badge"><span>Fit</span><span class="pct" id="fit-score-pct">—</span></div>
+              <div class="fit-tier" id="fit-tier">Strong fit</div>
+            </div>
+            <div class="bottle-wrap" id="result-bottle"></div>
+            <h2 style="font-size:18px; margin-bottom:4px;" id="result-name"></h2>
+            <p style="font-size:13px; color:var(--ink-soft); margin:0;" id="result-tagline"></p>
+          </div>
+
+          <h3 class="eyebrow" style="margin-bottom:8px;">Your shelf — final fit levels</h3>
+          <div class="result-shelf-compact"><div class="live-shelf" id="result-shelf"></div></div>
+
+          <div class="reason-list" id="reason-list"></div>
+
+          <div class="alt-block" id="alt-card">
+            <div class="alt-label">Alternative match</div>
+            <div class="alt-name" id="alt-name"></div>
+            <div class="alt-desc" id="alt-desc"></div>
+          </div>
+
+          <div class="shelf-note" id="result-shelf-cue"><strong>On shelf:</strong> <span id="shelf-cue-text"></span></div>
+          <p class="presenter-note">Presenter note: product copy is claim-safe for in-store guidance only.</p>
+
+          <div class="cta-promo">
+            <h3>Claim your sample</h3>
+            <p>Show this screen to a team member at the stand.</p>
+            <button class="btn-sample" onclick="go('redeem')">Claim sample</button>
+            <button class="btn-ba" onclick="go('redeem')">Show to team member</button>
+          </div>
+        </div>
+        <div class="screen-foot">
+          <button class="btn-secondary" onclick="restart()">Start over</button>
+        </div>
+      </section>
+
+      <!-- REDEMPTION -->
+      <section class="screen has-foot" data-screen="redeem">
+        <div class="topnav"><button class="back-btn" onclick="go('result')">←</button><span></span><span class="spacer"></span></div>
+        <div class="screen-body">
+          <div class="redeem-intro">
+            <h2>Show this to a Comfort team member</h2>
+            <p>They'll confirm your match and hand you a sample from the stand.</p>
+          </div>
+          <div class="qr-mock"></div>
+          <div class="code-box">
+            <div style="font-size:11.5px; opacity:0.7; letter-spacing:0.08em; text-transform:uppercase;">Fit code</div>
+            <div class="code" id="redeem-code">CMF‑7241</div>
+          </div>
+          <p style="font-size:14px; text-align:center; font-weight:600; margin:0 0 6px;" id="redeem-product-label"></p>
+          <p style="font-size:13px; color:var(--ink-soft); text-align:center; margin:0;" id="redeem-shelf-hint"></p>
+        </div>
+        <div class="screen-foot">
+          <button class="btn-primary" onclick="go('feedback')">Done</button>
+        </div>
+      </section>
+
+      <!-- FEEDBACK -->
+      <section class="screen has-foot" data-screen="feedback">
+        <div class="topnav"><span class="spacer"></span><span></span>
+          <button class="btn-ghost" onclick="go('done')">Skip</button>
+        </div>
+        <div class="screen-body" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+          <h2 class="q-title">Was this helpful?</h2>
+          <p class="q-sub">Your feedback helps us improve the advisor.</p>
+          <div class="feedback-row">
+            <button class="feedback-btn" data-fb="down" onclick="setFeedback('down')">👎</button>
+            <button class="feedback-btn" data-fb="up" onclick="setFeedback('up')">👍</button>
+          </div>
+        </div>
+        <div class="screen-foot">
+          <button class="btn-primary" onclick="go('done')">Finish</button>
+        </div>
+      </section>
+
+      <!-- DONE -->
+      <section class="screen has-foot" data-screen="done">
+        <div class="screen-body">
+          <div class="landing-hero">
+            <div class="bloom-wrap"><div class="bloom"></div></div>
+            <h2 class="q-title">You're all set</h2>
+            <p class="body-copy">Your match is on the bay. Ask a team member if you need help finding the bottle.</p>
+          </div>
+          <div class="future-aside">
+            <h3>Comfort Scent Diffuser</h3>
+            <p>A future concept — extending laundry scent beyond wash day. Not part of this pilot.</p>
+          </div>
+        </div>
+        <div class="screen-foot">
+          <button class="btn-secondary" onclick="restart()">Start over</button>
+        </div>
+      </section>
+
+    </div>
+    <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer(event)">
+      <div class="product-drawer" id="product-drawer" onclick="event.stopPropagation()">
+        <div class="drawer-handle"></div>
+        <div class="drawer-fit" id="drawer-fit"></div>
+        <div class="drawer-name" id="drawer-name"></div>
+        <div class="drawer-section" id="drawer-why"></div>
+        <div class="drawer-section" id="drawer-bestfor"><h4>Best for</h4><span id="drawer-bestfor-text"></span></div>
+        <div class="drawer-section" id="drawer-scent"><h4>Scent style</h4><span id="drawer-scent-text"></span></div>
+        <div class="drawer-section" id="drawer-ritual"><h4>Usage ritual</h4><span id="drawer-ritual-text"></span></div>
+        <div class="drawer-section" id="drawer-compare"><h4>Compare</h4><span id="drawer-compare-text"></span></div>
+        <button class="drawer-close" onclick="closeDrawer()">Close</button>
+      </div>
+    </div>
+    <div class="scan-overlay" id="scan-overlay">
+      <div class="scan-overlay-head">
+        <span style="font-weight:600;font-size:14px;">Scan today's outfit</span>
+        <button type="button" onclick="closeStyleScan()">Cancel</button>
+      </div>
+      <div class="scan-viewport">
+        <video id="scan-video" autoplay playsinline muted></video>
+        <img class="scan-preview hidden" id="scan-preview" alt="Outfit preview" />
+        <div class="scan-frame"></div>
+        <div class="scan-processing" id="scan-processing">
+          <div class="scan-spinner"></div>
+          <span style="font-size:13px;">Reading style signals…</span>
+        </div>
+      </div>
+      <div class="scan-overlay-foot">
+        <button type="button" class="scan-capture-btn" onclick="captureStyleScan()">Capture</button>
+        <button type="button" class="scan-demo-btn" onclick="pickStylePhoto()">Upload photo</button>
+        <button type="button" class="scan-demo-btn" onclick="simulateStyleScan()">Demo scan</button>
+      </div>
+      <input type="file" id="scan-file-input" accept="image/*" capture="environment" onchange="onStylePhotoPicked(event)" />
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  </div>
+  </div>
+
+  <div class="dash-section hidden" id="dash-view">
+  <div class="dashboard">
+  <div class="dash-head">
+    <div>
+      <h2>Pilot metrics</h2>
+      <p>Aeon Tân Phú · Fabric care aisle · Month 2 of 3</p>
+    </div>
+    <div class="dash-range">Jun 1 – Jun 28</div>
+  </div>
+
+  <p class="dash-summary">The live shelf model measures not only the final recommendation, but also which products shoppers explored during the decision process. <strong>187 sessions</strong> this month with <strong>54% advisor completion</strong>. Shoppers tap product cards 2.3× per session on average.</p>
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Sessions this month</div>
+      <div class="kpi-value">187</div>
+      <div class="kpi-delta up">↑ 12% vs. Month 1 · QR traffic converting</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Advisor completion rate</div>
+      <div class="kpi-value">54%</div>
+      <div class="kpi-delta up">Within 40–65% target · 101 fits completed</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg. time to first product tap</div>
+      <div class="kpi-value">18s</div>
+      <div class="kpi-delta up">↓ 4s vs. linear quiz pilot</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Product card tap rate</div>
+      <div class="kpi-value">73%</div>
+      <div class="kpi-delta up">136 of 187 sessions · live shelf engagement</div>
+    </div>
+  </div>
+
+  <div class="kpi-row" style="margin-top:-12px;">
+    <div class="kpi-card">
+      <div class="kpi-label">Best match viewed</div>
+      <div class="kpi-value">89%</div>
+      <div class="kpi-delta up">Shoppers reach result screen</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Sample / BA CTA click rate</div>
+      <div class="kpi-value">41%</div>
+      <div class="kpi-delta up">41 of 101 fits · above 30% floor</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Assisted vs self-serve scans</div>
+      <div class="kpi-value">62 / 38</div>
+      <div class="kpi-delta up">Assisted converts higher</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg. products explored / session</div>
+      <div class="kpi-value">2.3</div>
+      <div class="kpi-delta up">Parallel discovery on live shelf</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="panel">
+      <h3>Top personas</h3>
+      <div class="bar-row">
+        <div class="bar-label">Fresh Routine Optimizer</div>
+        <div class="bar-track"><div class="bar-fill" style="width:28%; background:linear-gradient(90deg,#9fc9e0,#6fa9c9);"></div></div>
+        <div class="bar-val">28%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Everyday Refresher</div>
+        <div class="bar-track"><div class="bar-fill" style="width:24%; background:linear-gradient(90deg,#c9e6f2,#6fa9c9);"></div></div>
+        <div class="bar-val">24%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Cozy Family Keeper</div>
+        <div class="bar-track"><div class="bar-fill" style="width:22%; background:linear-gradient(90deg,#e3b8d9,#b8a6e0);"></div></div>
+        <div class="bar-val">22%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Gentle Homemaker</div>
+        <div class="bar-track"><div class="bar-fill" style="width:16%; background:linear-gradient(90deg,#cfe8d8,#8bc4a1);"></div></div>
+        <div class="bar-val">16%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Soft Minimalist</div>
+        <div class="bar-track"><div class="bar-fill" style="width:10%; background:#c9c2e0;"></div></div>
+        <div class="bar-val">10%</div>
+      </div>
+
+      <h3 style="margin-top:22px;">Top recommended products</h3>
+      <div class="bar-row">
+        <div class="bar-label">Fresh Sky</div>
+        <div class="bar-track"><div class="bar-fill" style="width:32%; background:linear-gradient(90deg,#9fc9e0,#6fa9c9);"></div></div>
+        <div class="bar-val">32%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Everyday Fresh</div>
+        <div class="bar-track"><div class="bar-fill" style="width:28%; background:linear-gradient(90deg,#c9e6f2,#6fa9c9);"></div></div>
+        <div class="bar-val">28%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Botanicals</div>
+        <div class="bar-track"><div class="bar-fill" style="width:24%; background:linear-gradient(90deg,#e3b8d9,#b8a6e0);"></div></div>
+        <div class="bar-val">24%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Pure Gentle Care</div>
+        <div class="bar-track"><div class="bar-fill" style="width:16%; background:linear-gradient(90deg,#cfe8d8,#8bc4a1);"></div></div>
+        <div class="bar-val">16%</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Product discovery interactions</h3>
+      <div class="bar-row">
+        <div class="bar-label">Fresh Sky taps</div>
+        <div class="bar-track"><div class="bar-fill" style="width:34%; background:linear-gradient(90deg,#9fc9e0,#6fa9c9);"></div></div>
+        <div class="bar-val">312</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Everyday Fresh taps</div>
+        <div class="bar-track"><div class="bar-fill" style="width:28%; background:linear-gradient(90deg,#c9e6f2,#6fa9c9);"></div></div>
+        <div class="bar-val">258</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Botanicals taps</div>
+        <div class="bar-track"><div class="bar-fill" style="width:22%; background:linear-gradient(90deg,#e3b8d9,#b8a6e0);"></div></div>
+        <div class="bar-val">201</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Pure Gentle Care taps</div>
+        <div class="bar-track"><div class="bar-fill" style="width:16%; background:linear-gradient(90deg,#cfe8d8,#8bc4a1);"></div></div>
+        <div class="bar-val">147</div>
+      </div>
+
+      <h3 style="margin-top:22px;">Score movement by product</h3>
+      <div class="bar-row">
+        <div class="bar-label">Avg. final fit — Fresh Sky</div>
+        <div class="bar-track"><div class="bar-fill" style="width:78%; background:linear-gradient(90deg,#9fc9e0,#6fa9c9);"></div></div>
+        <div class="bar-val">78%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Avg. final fit — Everyday Fresh</div>
+        <div class="bar-track"><div class="bar-fill" style="width:72%; background:linear-gradient(90deg,#c9e6f2,#6fa9c9);"></div></div>
+        <div class="bar-val">72%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Avg. final fit — Botanicals</div>
+        <div class="bar-track"><div class="bar-fill" style="width:65%; background:linear-gradient(90deg,#e3b8d9,#b8a6e0);"></div></div>
+        <div class="bar-val">65%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Avg. final fit — Pure Gentle</div>
+        <div class="bar-track"><div class="bar-fill" style="width:58%; background:linear-gradient(90deg,#cfe8d8,#8bc4a1);"></div></div>
+        <div class="bar-val">58%</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Drop-off by input</h3>
+      <div class="bar-row">
+        <div class="bar-label">Q1 Shopping mission</div>
+        <div class="bar-track"><div class="bar-fill" style="width:5%; background:#c9c2e0;"></div></div>
+        <div class="bar-val">5%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Q2 Scent preference</div>
+        <div class="bar-track"><div class="bar-fill" style="width:7%; background:#c9c2e0;"></div></div>
+        <div class="bar-val">7%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Q3 Fabric / usage</div>
+        <div class="bar-track"><div class="bar-fill" style="width:12%; background:#e8a56b;"></div></div>
+        <div class="bar-val">12%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Q4 Drying condition</div>
+        <div class="bar-track"><div class="bar-fill" style="width:9%; background:#c9c2e0;"></div></div>
+        <div class="bar-val">9%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Q5 Scent intensity</div>
+        <div class="bar-track"><div class="bar-fill" style="width:6%; background:#c9c2e0;"></div></div>
+        <div class="bar-val">6%</div>
+      </div>
+      <div class="foot-note">
+        Illustrative pilot data for prototype walkthroughs. The live shelf model measures exploration alongside final fit — highest drop-off at Q3 fabric (12%).
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Assisted vs self-serve scans</h3>
+      <div class="bar-row">
+        <div class="bar-label">BA-assisted</div>
+        <div class="bar-track"><div class="bar-fill" style="width:62%; background:var(--plum);"></div></div>
+        <div class="bar-val">62%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Self-serve QR</div>
+        <div class="bar-track"><div class="bar-fill" style="width:38%; background:#c9c2e0;"></div></div>
+        <div class="bar-val">38%</div>
+      </div>
+      <div class="foot-note">
+        Assisted sessions show higher product tap rates (81% vs 58%) and faster time to first tap.
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+</div>
+
+<script>
+  const DEBUG = new URLSearchParams(location.search).get('debug') === 'true';
+
+  const WEIGHTS = {
+    scentPreference: 30,
+    shoppingMission: 25,
+    fabricContext: 15,
+    dryingCondition: 15,
+    scentIntensity: 15
+  };
+
+  const PRODUCTS = [
+    {
+      id: 'fresh-sky',
+      sku: 'CMF-FSK-900',
+      name: 'Comfort Fresh Sky',
+      scentFamily: 'Fresh & clean',
+      bestFor: 'Daily cotton · indoor drying',
+      scentStrength: 'Light – balanced',
+      fitTags: {
+        shoppingMission: ['daily_clothes', 'workwear', 'indoor_drying'],
+        scentPreference: ['fresh_clean', 'light_gentle'],
+        fabricContext: ['cotton_daily', 'towels_bedsheets'],
+        dryingCondition: ['indoor_drying', 'mixed'],
+        scentIntensity: ['light', 'balanced']
+      },
+      shelfCue: 'Sky-blue cap, mid-shelf on the Comfort bay — "light freshness" row, Bay 4.',
+      ritualTip: 'Add to the final rinse dispenser. Helpful when drying indoors, where scent can feel lighter on fabrics.',
+      claimSafeDescription: 'A lighter scent direction for everyday cotton loads and indoor-dried laundry.',
+      colorTheme: ['#c9e6f2', '#6fa9c9']
+    },
+    {
+      id: 'botanicals',
+      sku: 'CMF-BOT-850',
+      name: 'Comfort Botanicals Lily & White Musk',
+      scentFamily: 'Floral & elegant',
+      bestFor: 'Special loads · linens',
+      scentStrength: 'Balanced – lasting',
+      fitTags: {
+        shoppingMission: ['special_occasion', 'family_laundry', 'towels_bedsheets'],
+        scentPreference: ['floral_elegant', 'soft_cozy', 'longlasting_confidence'],
+        fabricContext: ['towels_bedsheets', 'delicate', 'office_clothes'],
+        dryingCondition: ['outdoor_sun', 'mixed', 'machine_dry'],
+        scentIntensity: ['balanced', 'longlasting']
+      },
+      shelfCue: 'Lilac Botanicals strip, premium row — second bottle from the left on Bay 4.',
+      ritualTip: 'Add in the final rinse for towels and bedsheets — floral notes tend to show well on larger fabric surfaces.',
+      claimSafeDescription: 'A floral, nature-inspired scent option for loads where you want a more elevated fragrance character.',
+      colorTheme: ['#e9d3ef', '#b8a6e0']
+    },
+    {
+      id: 'everyday-fresh',
+      sku: 'CMF-EDF-900',
+      name: 'Comfort Everyday Fresh',
+      scentFamily: 'Fresh & everyday',
+      bestFor: 'Workwear · mixed family loads',
+      scentStrength: 'Balanced',
+      fitTags: {
+        shoppingMission: ['daily_clothes', 'workwear', 'family_laundry'],
+        scentPreference: ['fresh_clean', 'longlasting_confidence'],
+        fabricContext: ['cotton_daily', 'office_clothes', 'kids_family'],
+        dryingCondition: ['mixed', 'machine_dry', 'outdoor_sun'],
+        scentIntensity: ['balanced', 'longlasting']
+      },
+      shelfCue: 'Teal Everyday Fresh bottle on the main Comfort row — centre of Bay 4, eye-level.',
+      ritualTip: 'Suits mixed loads — add to the final rinse for a consistent scent across shirts and family items.',
+      claimSafeDescription: 'An everyday scent option for varied loads and mixed laundry routines.',
+      colorTheme: ['#b8d9e8', '#5a9cb8']
+    },
+    {
+      id: 'pure-gentle',
+      sku: 'CMF-PGC-800',
+      name: 'Comfort Pure Gentle Care',
+      scentFamily: 'Light & gentle',
+      bestFor: 'Delicate items · light scent',
+      scentStrength: 'Light',
+      fitTags: {
+        shoppingMission: ['daily_clothes', 'family_laundry'],
+        scentPreference: ['light_gentle', 'soft_cozy'],
+        fabricContext: ['delicate', 'kids_family', 'cotton_daily'],
+        dryingCondition: ['indoor_drying', 'mixed'],
+        scentIntensity: ['light']
+      },
+      shelfCue: 'Soft green label, gentle-care section — bottom shelf on Bay 4.',
+      ritualTip: 'For delicate items — use the recommended dose in the final rinse for a subtle finishing scent.',
+      claimSafeDescription: 'A lighter scent option suited to delicate fabrics and shoppers who prefer a gentler fragrance level.',
+      colorTheme: ['#cfe8d8', '#8bc4a1']
+    }
+  ];
+
+  const QUESTION_ORDER = [
+    'shoppingMission', 'scentPreference', 'fabricContext', 'dryingCondition', 'scentIntensity'
+  ];
+
+  const QUESTIONS = {
+    shoppingMission: {
+      title: 'What are you choosing Comfort for today?',
+      sub: 'Your shopping mission shapes which variant rises first.',
+      options: [
+        { key: 'daily_clothes', label: 'Daily clothes' },
+        { key: 'workwear', label: 'Workwear' },
+        { key: 'family_laundry', label: 'Family laundry' },
+        { key: 'towels_bedsheets', label: 'Towels / bedsheets' },
+        { key: 'indoor_drying', label: 'Indoor drying' },
+        { key: 'special_occasion', label: 'Special occasion' }
+      ]
+    },
+    scentPreference: {
+      title: 'What scent feeling should your clothes carry?',
+      sub: 'Pick the fragrance direction you want on finished fabrics.',
+      options: [
+        { key: 'fresh_clean', label: 'Fresh & clean' },
+        { key: 'soft_cozy', label: 'Soft & cozy' },
+        { key: 'floral_elegant', label: 'Floral & elegant' },
+        { key: 'longlasting_confidence', label: 'Long-lasting confidence' },
+        { key: 'light_gentle', label: 'Light & gentle' }
+      ]
+    },
+    fabricContext: {
+      title: 'What do you wash most often?',
+      sub: 'Fabric context helps separate close fits on the shelf.',
+      options: [
+        { key: 'cotton_daily', label: 'Cotton daily wear' },
+        { key: 'office_clothes', label: 'Office clothes' },
+        { key: 'kids_family', label: 'Kids / family clothes' },
+        { key: 'towels_bedsheets', label: 'Towels / bedsheets' },
+        { key: 'delicate', label: 'Delicate clothes' }
+      ]
+    },
+    dryingCondition: {
+      title: 'How do you usually dry clothes?',
+      sub: 'Drying setup can shift which scent character feels right.',
+      options: [
+        { key: 'outdoor_sun', label: 'Outdoor sun' },
+        { key: 'indoor_drying', label: 'Indoor drying' },
+        { key: 'mixed', label: 'Mixed' },
+        { key: 'machine_dry', label: 'Machine dry' }
+      ]
+    },
+    scentIntensity: {
+      title: 'How strong do you like the scent?',
+      sub: 'From a subtle hint to a more present fragrance.',
+      options: [
+        { key: 'light', label: 'Light' },
+        { key: 'balanced', label: 'Balanced' },
+        { key: 'longlasting', label: 'Long-lasting' }
+      ]
+    }
+  };
+
+  const PERSONAS = {
+    everyday_refresher: {
+      id: 'everyday_refresher', name: 'The Everyday Refresher',
+      description: 'You want clothes to feel clean, easy, and ready for everyday life.',
+      dominantSignal: 'Fresh & practical', productTendency: 'fresh-sky',
+      socialLine: 'Your scent should feel quietly fresh, not overpowering.',
+      signals: { scentPreference: ['fresh_clean'], shoppingMission: ['daily_clothes', 'workwear'], fabricContext: ['cotton_daily'] }
+    },
+    gentle_homemaker: {
+      id: 'gentle_homemaker', name: 'The Gentle Homemaker',
+      description: 'You care for the household with a softer, calmer scent touch.',
+      dominantSignal: 'Soft & caring', productTendency: 'pure-gentle',
+      socialLine: 'Your home should smell welcoming, never heavy.',
+      signals: { scentPreference: ['soft_cozy', 'light_gentle'], shoppingMission: ['family_laundry'], fabricContext: ['kids_family', 'delicate'] }
+    },
+    fresh_routine_optimizer: {
+      id: 'fresh_routine_optimizer', name: 'The Fresh Routine Optimizer',
+      description: 'You want clothes to feel clean, easy, and ready for busy daily life.',
+      dominantSignal: 'Daily confidence', productTendency: 'everyday-fresh',
+      socialLine: 'Your scent should feel quietly confident, not overpowering.',
+      signals: { shoppingMission: ['workwear', 'daily_clothes'], scentPreference: ['fresh_clean', 'longlasting_confidence'], dryingCondition: ['mixed', 'machine_dry'] }
+    },
+    cozy_family_keeper: {
+      id: 'cozy_family_keeper', name: 'The Cozy Family Keeper',
+      description: 'You wash for everyone at home and want a scent that feels warm and shared.',
+      dominantSignal: 'Family & linens', productTendency: 'everyday-fresh',
+      socialLine: 'Your laundry should feel comforting across the household.',
+      signals: { shoppingMission: ['family_laundry', 'towels_bedsheets'], fabricContext: ['kids_family', 'towels_bedsheets'], scentPreference: ['soft_cozy'] }
+    },
+    soft_minimalist: {
+      id: 'soft_minimalist', name: 'The Soft Minimalist',
+      description: 'You prefer a light touch — scent that stays in the background.',
+      dominantSignal: 'Light & delicate', productTendency: 'pure-gentle',
+      socialLine: 'Less is more when it comes to fragrance on fabrics.',
+      signals: { scentPreference: ['light_gentle'], scentIntensity: ['light'], fabricContext: ['delicate'], shoppingMission: ['indoor_drying'] }
+    }
+  };
+
+  const ANSWER_LABELS = {
+    shoppingMission: {
+      daily_clothes: 'daily clothes', workwear: 'workwear', family_laundry: 'family laundry',
+      towels_bedsheets: 'towels & bedsheets', indoor_drying: 'indoor drying', special_occasion: 'special occasion'
+    },
+    scentPreference: {
+      fresh_clean: 'fresh & clean', soft_cozy: 'soft & cozy', floral_elegant: 'floral & elegant',
+      longlasting_confidence: 'long-lasting confidence', light_gentle: 'light & gentle'
+    },
+    fabricContext: {
+      cotton_daily: 'cotton daily wear', office_clothes: 'office clothes',
+      kids_family: 'kids & family clothes', towels_bedsheets: 'towels & bedsheets', delicate: 'delicate clothes'
+    },
+    dryingCondition: {
+      outdoor_sun: 'outdoor sun drying', indoor_drying: 'indoor drying',
+      mixed: 'mixed drying', machine_dry: 'machine drying'
+    },
+    scentIntensity: { light: 'light scent', balanced: 'balanced scent', longlasting: 'long-lasting scent' }
+  };
+
+  const REASON_LABELS = {
+    shoppingMission: v => 'Matches your ' + (ANSWER_LABELS.shoppingMission[v] || v) + ' mission',
+    scentPreference: v => 'Fits your ' + (ANSWER_LABELS.scentPreference[v] || v) + ' scent preference',
+    fabricContext: v => 'Suited to ' + (ANSWER_LABELS.fabricContext[v] || v),
+    dryingCondition: v => 'Works with your ' + (ANSWER_LABELS.dryingCondition[v] || v),
+    scentIntensity: v => 'Aligned with ' + (ANSWER_LABELS.scentIntensity[v] || v) + ' strength'
+  };
+
+  const STYLE_PROFILES = [
+    { id: 'minimal_soft', label: 'minimal & soft', productId: 'pure-gentle', cues: ['neutral palette', 'soft textures'] },
+    { id: 'structured_fresh', label: 'structured & fresh', productId: 'everyday-fresh', cues: ['clean lines', 'office-ready'] },
+    { id: 'casual_fresh', label: 'casual everyday', productId: 'fresh-sky', cues: ['cotton layers', 'light tones'] },
+    { id: 'elegant_layered', label: 'floral & elegant', productId: 'botanicals', cues: ['refined fabrics', 'layered look'] },
+    { id: 'cozy_relaxed', label: 'soft & cozy', productId: 'pure-gentle', cues: ['warm knits', 'relaxed fit'] }
+  ];
+
+  const TOTAL_WEIGHT = 100;
+  const state = {
+    questionIndex: 0,
+    answers: {},
+    scores: [],
+    prevScores: [],
+    result: null,
+    env: { humidity: null, tempC: null },
+    styleInspiration: null,
+    styleScan: null,
+    scanStream: null
+  };
+
+  function getFitStatus(pct) {
+    if (pct >= 90) return 'Best match';
+    if (pct >= 71) return 'Strong fit';
+    if (pct >= 46) return 'Good fit';
+    if (pct >= 21) return 'Possible fit';
+    return 'Learning';
+  }
+
+  function getFitTier(pct) {
+    if (pct >= 90) return 'Best match';
+    if (pct >= 71) return 'Strong fit';
+    if (pct >= 46) return 'Good fit';
+    return 'Possible fit';
+  }
+
+  function computeLiveScores(answers, isFinal) {
+    const scored = PRODUCTS.map(product => {
+      let earned = 0;
+      const breakdown = {};
+      for (const dim of QUESTION_ORDER) {
+        const w = WEIGHTS[dim];
+        if (!answers[dim]) { breakdown[dim] = { match: 0, weight: w, pts: 0 }; continue; }
+        const match = (product.fitTags[dim] || []).includes(answers[dim]) ? 1 : 0;
+        const pts = match * w;
+        earned += pts;
+        breakdown[dim] = { match, weight: w, pts };
+      }
+      if (state.env.humidity >= 65 && ['fresh-sky', 'pure-gentle'].includes(product.id)) {
+        if (answers.shoppingMission === 'indoor_drying' || answers.dryingCondition === 'indoor_drying') {
+          earned = Math.min(TOTAL_WEIGHT, earned + 3);
+        }
+      }
+      if (state.styleInspiration === product.id) earned = Math.min(TOTAL_WEIGHT, earned + 3);
+      let pct = Math.round((earned / TOTAL_WEIGHT) * 100);
+      if (isFinal) pct = earned >= TOTAL_WEIGHT ? Math.min(98, pct) : Math.min(95, pct);
+      return { product, earned, pct, breakdown };
+    });
+    return scored.sort((a, b) => b.pct - a.pct || b.earned - a.earned);
+  }
+
+  function resolvePersona(answers) {
+    const count = Object.keys(answers).length;
+    if (count === 0) return null;
+    let best = null, bestScore = -1;
+    for (const p of Object.values(PERSONAS)) {
+      let s = 0;
+      for (const [dim, vals] of Object.entries(p.signals)) {
+        if (answers[dim] && vals.includes(answers[dim])) s += 2;
+      }
+      if (s > bestScore) { bestScore = s; best = p; }
+    }
+    return best || PERSONAS.everyday_refresher;
+  }
+
+  function getPersonaUI(answers) {
+    const count = Object.keys(answers).length;
+    const persona = resolvePersona(answers);
+    if (count === 0) return { phase: 'Reading your profile', title: 'Still learning your scent profile.', sub: '' };
+    if (count === 1) return { phase: 'Early signal', title: 'You may be ' + persona.name + '.', sub: persona.socialLine };
+    if (count === 2) return { phase: 'Profile forming', title: 'Your profile is leaning ' + persona.dominantSignal + '.', sub: persona.socialLine };
+    if (count < 5) return { phase: 'Persona signal', title: persona.name, sub: persona.description };
+    return { phase: 'Final persona', title: persona.name, sub: persona.description + ' ' + persona.socialLine };
+  }
+
+  function getMicroLine(dim, value, prev, next) {
+    const label = ANSWER_LABELS[dim][value] || value;
+    const deltas = next.map((s, i) => ({
+      name: s.product.name.replace('Comfort ', ''),
+      delta: s.pct - (prev[i] ? prev[i].pct : 0)
+    })).filter(d => d.delta > 0).sort((a, b) => b.delta - a.delta);
+    if (!deltas.length) return 'Shelf updated for ' + label + '.';
+    return '<strong>' + deltas[0].name + '</strong> is rising because you chose ' + label + '.';
+  }
+
+  function shortName(p) { return p.name.replace('Comfort ', ''); }
+
+  function bottleSVG(colors) {
+    const c = colors || ['#c9e6f2', '#6fa9c9'];
+    return '<svg class="bottle" viewBox="0 0 88 118" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="34" y="4" width="20" height="14" rx="3" fill="' + c[1] + '"/>' +
+      '<path d="M28 20h32c3 0 5 2 5 5v10l6 10v60c0 5-4 9-9 9H26c-5 0-9-4-9-9V45l6-10V25c0-3 2-5 5-5z" fill="' + c[0] + '" stroke="' + c[1] + '" stroke-width="2"/>' +
+      '<rect x="20" y="70" width="48" height="28" rx="6" fill="#ffffff" opacity="0.85"/>' +
+      '</svg>';
+  }
+
+  function renderShelf(containerId, scores, opts) {
+    opts = opts || {};
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const leader = scores[0];
+    const prev = state.prevScores || [];
+    el.innerHTML = scores.map(s => {
+      const p = s.product;
+      const prevPct = prev.find(x => x.product.id === p.id);
+      const delta = prevPct ? s.pct - prevPct.pct : 0;
+      const isLeader = leader && leader.product.id === p.id && s.pct > 0;
+      const rising = delta > 0 && opts.animate;
+      const deltaCls = delta !== 0 ? 'show' + (delta < 0 ? ' down' : '') : '';
+      const deltaTxt = delta > 0 ? ('+' + delta + ' fit') : (delta < 0 ? (delta + ' fit') : '');
+      const tap = opts.tappable === false ? 'disabled style="cursor:default"' : 'onclick="openDrawer(\'' + p.id + '\')"';
+      return '<button type="button" class="shelf-card' + (isLeader ? ' leader' : '') + (rising ? ' rising' : '') + '" ' + tap + '>' +
+        '<div class="sc-bottle">' + bottleSVG(p.colorTheme) + '</div>' +
+        '<div class="sc-body">' +
+        '<div class="sc-name">' + shortName(p) + '</div>' +
+        '<div class="sc-family">' + p.scentFamily + '</div>' +
+        '<div class="sc-fit-row"><span class="sc-pct">' + s.pct + '%</span><span class="sc-delta ' + deltaCls + '">' + deltaTxt + '</span></div>' +
+        '<div class="sc-bar"><div class="sc-bar-fill" style="width:' + s.pct + '%"></div></div>' +
+        '<div class="sc-status">' + getFitStatus(s.pct) + '</div></div></button>';
+    }).join('');
+    const label = document.getElementById('shelf-leader-label');
+    if (label && containerId === 'live-shelf') {
+      let txt = leader && leader.pct > 0 ? ('Leading: ' + shortName(leader.product)) : '';
+      if (opts.animate && prev.length) {
+        const risers = scores.map(s => {
+          const p = prev.find(x => x.product && x.product.id === s.product.id);
+          return { name: shortName(s.product), delta: p ? s.pct - p.pct : 0 };
+        }).filter(r => r.delta > 0).sort((a, b) => b.delta - a.delta);
+        if (risers[0] && risers[0].delta > 0) {
+          txt += (txt ? ' · ' : '') + 'Rising: ' + risers[0].name + ' (+' + risers[0].delta + ')';
+        }
+      }
+      label.textContent = txt;
+    }
+    if (opts.animate) {
+      el.querySelectorAll('.sc-pct').forEach(node => {
+        const target = parseInt(node.textContent, 10) || 0;
+        const card = node.closest('.shelf-card');
+        const id = card && card.getAttribute('onclick');
+        let from = 0;
+        if (id) {
+          const m = id.match(/openDrawer\('([^']+)'\)/);
+          if (m) {
+            const p = prev.find(x => x.product && x.product.id === m[1]);
+            if (p) from = p.pct || 0;
+          }
+        }
+        if (from === target) return;
+        const start = performance.now();
+        const dur = 500;
+        function tick(now) {
+          const t = Math.min(1, (now - start) / dur);
+          node.textContent = Math.round(from + (target - from) * t) + '%';
+          if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }
+  }
+
+  function buildReasonCodes(product, breakdown, answers) {
+    const codes = [];
+    for (const dim of QUESTION_ORDER) {
+      if (breakdown[dim] && breakdown[dim].match && REASON_LABELS[dim]) {
+        codes.push(REASON_LABELS[dim](answers[dim]));
+      }
+      if (codes.length >= 4) break;
+    }
+    while (codes.length < 3) codes.push('Suited to ' + product.bestFor.toLowerCase());
+    return codes.slice(0, 4);
+  }
+
+  function buildDrawerInsight(product, score, best) {
+    const parts = [];
+    for (const dim of QUESTION_ORDER) {
+      if (score.breakdown[dim] && score.breakdown[dim].match && state.answers[dim]) {
+        parts.push(ANSWER_LABELS[dim][state.answers[dim]]);
+      }
+    }
+    let why = parts.length
+      ? shortName(product) + ' is rising because you selected ' + parts.join(', ') + '.'
+      : (score.pct > 0 ? shortName(product) + ' is building fit from your inputs.' : shortName(product) + ' is still learning your profile.');
+    if (best && best.product.id !== product.id && score.pct < best.pct) {
+      why += ' Not the strongest match yet — ' + shortName(best.product) + ' leads at ' + best.pct + '%.';
+    } else if (best && best.product.id === product.id) {
+      why += ' Currently leads the shelf.';
+    }
+    return why;
+  }
+
+  function openDrawer(productId) {
+    const score = state.scores.find(s => s.product.id === productId);
+    if (!score) return;
+    const p = score.product;
+    const best = state.scores[0];
+    document.getElementById('drawer-fit').textContent = score.pct + '% · ' + getFitStatus(score.pct);
+    document.getElementById('drawer-name').textContent = p.name;
+    document.getElementById('drawer-why').innerHTML = '<h4>Why this fit level</h4>' + buildDrawerInsight(p, score, best);
+    document.getElementById('drawer-bestfor-text').textContent = p.bestFor;
+    document.getElementById('drawer-scent-text').textContent = p.scentFamily + ' · ' + p.scentStrength;
+    document.getElementById('drawer-ritual-text').textContent = p.ritualTip;
+    const alt = state.scores[1];
+    document.getElementById('drawer-compare-text').textContent = best && alt
+      ? 'Leader: ' + shortName(best.product) + ' (' + best.pct + '%). Alternative: ' + shortName(alt.product) + ' (' + alt.pct + '%).'
+      : '';
+    document.getElementById('drawer-backdrop').classList.add('open');
+  }
+
+  function closeDrawer(e) {
+    if (e && e.target !== document.getElementById('drawer-backdrop')) return;
+    document.getElementById('drawer-backdrop').classList.remove('open');
+  }
+
+  function getScreen(name) {
+    return document.querySelector('.screen[data-screen="' + name + '"]');
+  }
+
+  function go(name) {
+    document.querySelectorAll('.screen').forEach(s => {
+      s.classList.remove('active');
+      s.scrollTop = 0;
+    });
+    const target = getScreen(name);
+    if (!target) return;
+    target.classList.add('active');
+    target.scrollTop = 0;
+    closeDrawer();
+    const shell = document.querySelector('.phone-shell');
+    const protoWrap = document.getElementById('proto-view');
+    if (shell) shell.classList.toggle('advisor-landscape', name === 'advisor');
+    if (protoWrap) protoWrap.classList.toggle('advisor-active', name === 'advisor');
+    if (name !== 'advisor') closeStyleScan(true);
+  }
+
+  function switchView(view) {
+    document.getElementById('tab-story').classList.toggle('active', view === 'story');
+    document.getElementById('tab-proto').classList.toggle('active', view === 'proto');
+    document.getElementById('tab-dash').classList.toggle('active', view === 'dash');
+    document.getElementById('story-view').classList.toggle('hidden', view !== 'story');
+    document.getElementById('proto-view').classList.toggle('hidden', view !== 'proto');
+    document.getElementById('dash-view').classList.toggle('hidden', view !== 'dash');
+    document.getElementById('page-hero').classList.toggle('hidden', view !== 'proto');
+    document.getElementById('page-root').classList.toggle('page-wide', view === 'story' || view === 'dash');
+  }
+
+  function zeroScores() {
+    return PRODUCTS.map(p => ({ product: p, earned: 0, pct: 0, breakdown: {} }));
+  }
+
+  function updatePersonaUI(answers) {
+    const ui = getPersonaUI(answers);
+    const phase = document.getElementById('persona-phase');
+    const title = document.getElementById('persona-title');
+    const sub = document.getElementById('persona-sub');
+    if (phase) phase.textContent = ui.phase;
+    if (title) title.textContent = ui.title;
+    if (sub) sub.textContent = ui.sub || '';
+  }
+
+  function renderAdvisorQuestion() {
+    const key = QUESTION_ORDER[state.questionIndex];
+    const q = QUESTIONS[key];
+    const num = state.questionIndex + 1;
+    document.getElementById('q-eyebrow').textContent = 'Question ' + num + ' of ' + QUESTION_ORDER.length;
+    document.getElementById('q-title').textContent = q.title;
+    document.getElementById('q-sub').textContent = q.sub;
+
+    const row = document.getElementById('progress-row');
+    row.innerHTML = '';
+    for (let i = 0; i < QUESTION_ORDER.length; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'progress-seg' + (i < state.questionIndex ? ' done' : (i === state.questionIndex ? ' active' : ''));
+      seg.innerHTML = '<div class="fill"></div>';
+      row.appendChild(seg);
+    }
+
+    const container = document.getElementById('q-options');
+    container.innerHTML = '';
+    const list = document.createElement('div');
+    list.className = 'opt-list';
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-row';
+      btn.innerHTML = '<div><div class="label">' + opt.label + '</div></div><span class="tick"></span>';
+      btn.onclick = () => answerQuestion(key, opt.key);
+      list.appendChild(btn);
+    });
+    container.appendChild(list);
+  }
+
+  function refreshScoresFromSignals(animate) {
+    const allDone = QUESTION_ORDER.every(d => state.answers[d]);
+    const prev = state.scores.map(s => ({ product: s.product, pct: s.pct }));
+    state.prevScores = prev;
+    state.scores = computeLiveScores(state.answers, allDone);
+    renderShelf('live-shelf', state.scores, { animate: !!animate });
+    if (DEBUG) renderDebugPanelLive();
+  }
+
+  function updateScanCardUI() {
+    const hint = document.getElementById('scan-hint');
+    const btn = document.getElementById('btn-scan');
+    const thumb = document.getElementById('scan-thumb');
+    if (!hint || !btn) return;
+    if (state.styleScan) {
+      const prod = PRODUCTS.find(p => p.id === state.styleScan.productId);
+      hint.innerHTML = 'Outfit reads <strong>' + state.styleScan.label + '</strong> — ' +
+        shortName(prod) + ' gets an inspiration nudge (+3 fit).';
+      btn.textContent = 'Rescan';
+      btn.classList.add('secondary');
+      if (thumb && state.styleScan.previewUrl) {
+        thumb.innerHTML = '<img src="' + state.styleScan.previewUrl + '" alt="" />';
+        thumb.classList.add('has-img');
+      }
+    } else {
+      hint.textContent = 'Scan what you\'re wearing for an inspiration fit nudge.';
+      btn.textContent = 'Scan outfit';
+      btn.classList.remove('secondary');
+      if (thumb) { thumb.innerHTML = '👔'; thumb.classList.remove('has-img'); }
+    }
+  }
+
+  function analyzeStyleFromImage(img) {
+    const canvas = document.createElement('canvas');
+    const size = 48;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, size, size);
+    const data = ctx.getImageData(0, 0, size, size).data;
+    let r = 0, g = 0, b = 0, n = 0;
+    let soft = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const pr = data[i], pg = data[i + 1], pb = data[i + 2];
+      r += pr; g += pg; b += pb; n++;
+      const max = Math.max(pr, pg, pb), min = Math.min(pr, pg, pb);
+      if (max - min < 40) soft++;
+    }
+    r /= n; g /= n; b /= n;
+    const brightness = (r + g + b) / 3;
+    const softRatio = soft / (n || 1);
+    if (softRatio > 0.55 && brightness > 140) return STYLE_PROFILES[0];
+    if (b > r + 15 && g > r) return STYLE_PROFILES[1];
+    if (r > 120 && g > 100 && b < 100) return STYLE_PROFILES[4];
+    if (brightness < 110) return STYLE_PROFILES[3];
+    return STYLE_PROFILES[2];
+  }
+
+  function applyStyleScan(profile, previewUrl) {
+    state.styleScan = { ...profile, previewUrl: previewUrl || null };
+    state.styleInspiration = profile.productId;
+    refreshScoresFromSignals(true);
+    updateScanCardUI();
+    const prod = PRODUCTS.find(p => p.id === profile.productId);
+    document.getElementById('micro-line').innerHTML =
+      'Your outfit leans <strong>' + profile.label + '</strong>. ' +
+      shortName(prod) + ' rises as an inspiration match.';
+  }
+
+  function runStyleScanWithImage(img, previewUrl) {
+    const processing = document.getElementById('scan-processing');
+    if (processing) processing.classList.add('show');
+    setTimeout(() => {
+      const profile = analyzeStyleFromImage(img);
+      if (processing) processing.classList.remove('show');
+      closeStyleScan(true);
+      applyStyleScan(profile, previewUrl);
+    }, 1100);
+  }
+
+  async function openStyleScan() {
+    const overlay = document.getElementById('scan-overlay');
+    const video = document.getElementById('scan-video');
+    const preview = document.getElementById('scan-preview');
+    overlay.classList.add('open');
+    preview.classList.add('hidden');
+    video.classList.remove('hidden');
+    try {
+      if (state.scanStream) state.scanStream.getTracks().forEach(t => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } }, audio: false
+      });
+      state.scanStream = stream;
+      video.srcObject = stream;
+      await video.play();
+    } catch (e) {
+      video.classList.add('hidden');
+    }
+  }
+
+  function closeStyleScan(silent) {
+    const overlay = document.getElementById('scan-overlay');
+    const video = document.getElementById('scan-video');
+    const processing = document.getElementById('scan-processing');
+    if (state.scanStream) {
+      state.scanStream.getTracks().forEach(t => t.stop());
+      state.scanStream = null;
+    }
+    if (video) { video.srcObject = null; video.classList.remove('hidden'); }
+    if (processing) processing.classList.remove('show');
+    if (overlay && !silent) overlay.classList.remove('open');
+    else if (overlay) overlay.classList.remove('open');
+  }
+
+  function captureStyleScan() {
+    const video = document.getElementById('scan-video');
+    if (!video || !video.videoWidth) {
+      simulateStyleScan();
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const previewUrl = canvas.toDataURL('image/jpeg', 0.7);
+    const preview = document.getElementById('scan-preview');
+    preview.src = previewUrl;
+    preview.classList.remove('hidden');
+    video.classList.add('hidden');
+    runStyleScanWithImage(preview, previewUrl);
+  }
+
+  function pickStylePhoto() {
+    document.getElementById('scan-file-input').click();
+  }
+
+  function onStylePhotoPicked(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const preview = document.getElementById('scan-preview');
+      const video = document.getElementById('scan-video');
+      preview.src = url;
+      preview.classList.remove('hidden');
+      if (video) video.classList.add('hidden');
+      runStyleScanWithImage(img, url);
+      e.target.value = '';
+    };
+    img.src = url;
+  }
+
+  function simulateStyleScan() {
+    const profile = STYLE_PROFILES[Math.floor(Math.random() * STYLE_PROFILES.length)];
+    const processing = document.getElementById('scan-processing');
+    if (processing) processing.classList.add('show');
+    setTimeout(() => {
+      if (processing) processing.classList.remove('show');
+      closeStyleScan(true);
+      applyStyleScan(profile, null);
+    }, 900);
+  }
+
+  function startAdvisor() {
+    state.questionIndex = 0;
+    state.answers = {};
+    state.result = null;
+    state.styleInspiration = null;
+    state.styleScan = null;
+    state.prevScores = zeroScores();
+    state.scores = zeroScores();
+    updatePersonaUI({});
+    updateScanCardUI();
+    document.getElementById('micro-line').innerHTML = 'Tap a product to explore · all start at 0% fit';
+    renderShelf('live-shelf', state.scores, { animate: false });
+    renderAdvisorQuestion();
+    if (DEBUG) {
+      const advDbg = document.getElementById('advisor-debug-wrap');
+      if (advDbg) advDbg.classList.remove('hidden');
+      renderDebugPanelLive();
+    }
+    go('advisor');
+  }
+
+  function exitAdvisor() {
+    closeDrawer();
+    go('intro');
+  }
+
+  function answerQuestion(key, value) {
+    const prev = state.scores.map(s => ({ product: s.product, pct: s.pct }));
+    state.prevScores = prev;
+    state.answers[key] = value;
+    if (key === 'scentPreference') applyScentTheme(value);
+
+    const allDone = QUESTION_ORDER.every(d => state.answers[d]);
+    state.scores = computeLiveScores(state.answers, allDone);
+    updatePersonaUI(state.answers);
+    renderShelf('live-shelf', state.scores, { animate: true });
+    document.getElementById('micro-line').innerHTML = getMicroLine(key, value, prev, state.scores);
+
+    if (DEBUG) renderDebugPanelLive();
+
+    state.questionIndex++;
+    if (state.questionIndex >= QUESTION_ORDER.length) {
+      setTimeout(finishAdvisor, 400);
+    } else {
+      renderAdvisorQuestion();
+    }
+  }
+
+  function finishAdvisor() {
+    state.scores = computeLiveScores(state.answers, true);
+    const best = state.scores[0];
+    const alt = state.scores[1];
+    const persona = resolvePersona(state.answers);
+    state.result = {
+      bestMatch: best.product,
+      alternativeMatch: alt.product,
+      fitScore: best.pct,
+      reasonCodes: buildReasonCodes(best.product, best.breakdown, state.answers),
+      persona,
+      allScores: state.scores.map(s => ({
+        id: s.product.id,
+        name: s.product.name,
+        earned: s.earned,
+        pct: s.pct,
+        breakdown: s.breakdown
+      }))
+    };
+    buildResultScreen();
+    go('result');
+  }
+
+  function applyScentTheme(pref) {
+    const themes = {
+      fresh_clean: ['#9fc9e0', '#6fa9c9'],
+      soft_cozy: ['#e3b8d9', '#b8a6e0'],
+      floral_elegant: ['#e9d3ef', '#b8a6e0'],
+      longlasting_confidence: ['#b8d9e8', '#5a9cb8'],
+      light_gentle: ['#cfe8d8', '#8bc4a1']
+    };
+    const c = themes[pref] || ['#b8a6e0', '#9fc9e0'];
+    document.documentElement.style.setProperty('--current-mood-1', c[0]);
+    document.documentElement.style.setProperty('--current-mood-2', c[1]);
+  }
+
+  function buildResultScreen() {
+    const r = state.result;
+    const product = r.bestMatch;
+    const personaUI = getPersonaUI(state.answers);
+
+    document.getElementById('result-persona-phase').textContent = personaUI.phase;
+    document.getElementById('result-persona-title').textContent = personaUI.title;
+    document.getElementById('result-persona-sub').textContent = personaUI.sub;
+
+    document.getElementById('fit-score-pct').textContent = r.fitScore + '%';
+    document.getElementById('fit-tier').textContent = getFitStatus(r.fitScore);
+    document.getElementById('result-name').textContent = product.name;
+    document.getElementById('result-tagline').textContent = product.claimSafeDescription;
+    document.getElementById('result-bottle').innerHTML = bottleSVG(product.colorTheme);
+
+    const reasonList = document.getElementById('reason-list');
+    reasonList.innerHTML = '';
+    r.reasonCodes.forEach((code, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'reason-chip';
+      chip.innerHTML = '<span class="ico">' + ['✓', '◎', '◆', '◇'][i] + '</span><span>' + code + '</span>';
+      reasonList.appendChild(chip);
+    });
+
+    renderShelf('result-shelf', state.scores, { animate: false, tappable: true });
+
+    document.getElementById('alt-name').textContent = r.alternativeMatch.name;
+    document.getElementById('alt-desc').textContent =
+      r.alternativeMatch.claimSafeDescription + ' · ' + state.scores.find(s => s.product.id === r.alternativeMatch.id).pct + '% fit';
+
+    document.getElementById('shelf-cue-text').textContent = product.shelfCue;
+    document.getElementById('redeem-code').textContent = 'CMF-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('redeem-product-label').textContent = product.name;
+    document.getElementById('redeem-shelf-hint').textContent = product.shelfCue;
+
+    if (DEBUG) renderDebugPanelLive();
+  }
+
+  function renderDebugPanelLive() {
+    let wrap = document.getElementById('debug-panel-wrap');
+    if (!wrap) {
+      wrap = document.getElementById('advisor-debug-wrap');
+    }
+    if (!wrap) return;
+    wrap.classList.remove('hidden');
+    const r = state.result;
+    const best = state.scores[0];
+    const alt = state.scores[1];
+    const prev = state.prevScores || [];
+    const deltaLines = state.scores.map(s => {
+      const p = prev.find(x => x.product && x.product.id === s.product.id);
+      const d = p ? s.pct - p.pct : 0;
+      return '  ' + shortName(s.product) + ': ' + s.pct + '%' + (d ? ' (' + (d > 0 ? '+' : '') + d + ')' : '');
+    });
+    const persona = resolvePersona(state.answers);
+    const lines = [
+      'INPUTS:', JSON.stringify(state.answers, null, 2), '',
+      'PERSONA:', persona ? persona.name : '—', '',
+      'SCORES:', ...deltaLines, '',
+      'WINNING:', best ? shortName(best.product) + ' (' + best.pct + '%)' : '—',
+      'ALTERNATIVE:', alt ? shortName(alt.product) + ' (' + alt.pct + '%)' : '—'
+    ];
+    if (r && r.reasonCodes) {
+      lines.push('', 'REASON CODES:', ...r.reasonCodes.map(c => '  · ' + c));
+    }
+    if (state.styleScan) {
+      lines.push('', 'STYLE SCAN:', '  ' + state.styleScan.label + ' → ' + state.styleInspiration + ' (+3 inspiration)');
+    }
+    wrap.innerHTML = '<details class="debug-panel" open><summary>Debug · live shelf</summary><pre>' +
+      lines.join('\n') + '</pre></details>';
+  }
+
+  async function fetchEnvironment() {
+    try {
+      const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=10.8&longitude=106.6&current=temperature_2m,relative_humidity_2m');
+      const data = await res.json();
+      const cur = data.current;
+      if (cur) {
+        state.env.humidity = cur.relative_humidity_2m;
+        state.env.tempC = cur.temperature_2m;
+        const el = document.getElementById('env-signal');
+        if (el && state.env.humidity >= 65) {
+          el.classList.remove('hidden');
+          el.textContent = 'Humid weather detected. Indoor-drying friendly options may rise slightly.';
+        }
+      }
+    } catch (e) { /* optional signal */ }
+  }
+
+  function setFeedback(val) {
+    document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector('.feedback-btn[data-fb="' + val + '"]').classList.add('selected');
+    state.answers.feedback = val;
+  }
+
+  function restart() {
+    state.questionIndex = 0;
+    state.answers = {};
+    state.result = null;
+    state.styleInspiration = null;
+    state.styleScan = null;
+    state.scores = zeroScores();
+    state.prevScores = zeroScores();
+    closeStyleScan(true);
+    document.documentElement.style.setProperty('--current-mood-1', '#b8a6e0');
+    document.documentElement.style.setProperty('--current-mood-2', '#9fc9e0');
+    document.querySelectorAll('.feedback-btn').forEach(b => b.classList.remove('selected'));
+    const wrap = document.getElementById('debug-panel-wrap');
+    if (wrap) wrap.classList.add('hidden');
+    const advDbg = document.getElementById('advisor-debug-wrap');
+    if (advDbg) advDbg.innerHTML = '';
+    closeDrawer();
+    go('landing');
+  }
+
+  const DIFFUSER_FITS = {
+    'fresh-sky': 87,
+    'everyday-fresh': 84,
+    'botanicals': 79,
+    'pure-gentle': 82
+  };
+
+  const DIFFUSER_THEMES = {
+    'fresh-sky': { accent: '#6fa9c9', glow: '#9fc9e0', mist: 'rgba(111,169,201,0.55)' },
+    'botanicals': { accent: '#b8a6e0', glow: '#e9d3ef', mist: 'rgba(184,166,224,0.55)' },
+    'everyday-fresh': { accent: '#5a9cb8', glow: '#b8d9e8', mist: 'rgba(90,156,184,0.55)' },
+    'pure-gentle': { accent: '#8bc4a1', glow: '#cfe8d8', mist: 'rgba(139,196,161,0.55)' }
+  };
+
+  const diffuserState = { productId: 'fresh-sky', playing: false, timer: null };
+
+  function buildDiffuserParticles() {
+    const container = document.getElementById('diffuser-particles');
+    if (!container || container.childElementCount) return;
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('span');
+      p.className = 'diffuser-particle';
+      p.style.setProperty('--sz', (5 + Math.random() * 8) + 'px');
+      p.style.setProperty('--delay', (Math.random() * 2) + 's');
+      p.style.setProperty('--dur', (2 + Math.random() * 1.5) + 's');
+      p.style.setProperty('--drift', ((Math.random() - 0.5) * 40) + 'px');
+      p.style.left = (15 + Math.random() * 70) + '%';
+      container.appendChild(p);
+    }
+  }
+
+  function initDiffuserDemo() {
+    const picks = document.getElementById('diffuser-picks');
+    if (!picks || picks.dataset.ready) return;
+    picks.dataset.ready = '1';
+    picks.innerHTML = PRODUCTS.map(p => {
+      const short = p.name.replace('Comfort ', '');
+      const fit = DIFFUSER_FITS[p.id] || 80;
+      return '<button type="button" class="diffuser-pick' + (p.id === 'fresh-sky' ? ' active' : '') +
+        '" data-id="' + p.id + '" onclick="selectDiffuserProduct(\'' + p.id + '\')">' +
+        '<span class="dp-name">' + short + '</span>' +
+        '<span class="dp-fit">' + fit + '% fit</span></button>';
+    }).join('');
+    buildDiffuserParticles();
+    selectDiffuserProduct('fresh-sky', true);
+  }
+
+  function selectDiffuserProduct(id, silent) {
+    if (diffuserState.playing) return;
+    diffuserState.productId = id;
+    const prod = PRODUCTS.find(p => p.id === id);
+    const t = DIFFUSER_THEMES[id] || DIFFUSER_THEMES['fresh-sky'];
+    const demo = document.getElementById('diffuser-demo');
+    if (demo) {
+      demo.style.setProperty('--diffuser-accent', t.accent);
+      demo.style.setProperty('--diffuser-glow', t.glow);
+      demo.style.setProperty('--diffuser-mist', t.mist);
+    }
+    document.querySelectorAll('.diffuser-pick').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.id === id);
+    });
+    const phase = document.querySelector('#diffuser-status .ds-phase');
+    const scent = document.querySelector('#diffuser-status .ds-scent');
+    const meta = document.querySelector('#diffuser-status .ds-meta');
+    if (scent) scent.textContent = prod.name;
+    if (meta) meta.textContent = (DIFFUSER_FITS[id] || 80) + '% fit · tap Release to diffuse';
+    if (phase && !silent) phase.textContent = 'Match selected';
+  }
+
+  function playDiffuserDemo() {
+    if (diffuserState.playing) return;
+    const scene = document.getElementById('diffuser-scene');
+    const unit = document.getElementById('diffuser-unit');
+    const btn = document.getElementById('diffuser-play-btn');
+    const prod = PRODUCTS.find(p => p.id === diffuserState.productId);
+    const short = prod.name.replace('Comfort ', '');
+
+    diffuserState.playing = true;
+    btn.disabled = true;
+    btn.classList.add('playing');
+    btn.textContent = 'Diffusing…';
+    const phase = document.querySelector('#diffuser-status .ds-phase');
+    const meta = document.querySelector('#diffuser-status .ds-meta');
+    if (phase) phase.textContent = 'Now diffusing';
+    if (meta) meta.textContent = 'Customer samples ' + short + ' at the bay';
+
+    scene.classList.add('diffusing');
+    unit.classList.add('active');
+
+    clearTimeout(diffuserState.timer);
+    diffuserState.timer = setTimeout(function() {
+      diffuserState.playing = false;
+      btn.disabled = false;
+      btn.classList.remove('playing');
+      btn.textContent = 'Release recommended scent';
+      scene.classList.remove('diffusing');
+      unit.classList.remove('active');
+      if (phase) phase.textContent = 'Session complete';
+      if (meta) meta.textContent = 'Ready for next shopper · select another match';
+    }, 5000);
+  }
+
+  fetchEnvironment();
+  initDiffuserDemo();
+  if (DEBUG) {
+    const dbg = document.createElement('div');
+    dbg.id = 'advisor-debug-wrap';
+    dbg.className = 'hidden';
+    const advisor = getScreen('advisor');
+    if (advisor) advisor.querySelector('.advisor-layout').appendChild(dbg);
+  }
+</script>
+</body>
+</html>

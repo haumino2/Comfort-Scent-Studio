@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comfort — Product Fit Advisor</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf6f2;
+  --bg-warm: #fff9f4;
+  --ink: #2d2a26;
+  --mut: #6b6560;
+  --line: #ebe4dc;
+  --brand: #4a90c4;
+  --brand-soft: #e8f3fa;
+  --coral: #e8927c;
+  --coral-soft: #fdeee8;
+  --mint: #7ec4a8;
+  --mint-soft: #e8f6f0;
+  --lavender: #b8a8d4;
+  --lavender-soft: #f0ebf8;
+  --peach: #f5c9a8;
+  --peach-soft: #fef3eb;
+  --gold: #d4a853;
+  --gold-soft: #faf3e3;
+  --phone-w: 375px;
+  --phone-h: 720px;
+  --radius: 16px;
+  --shadow: 0 8px 32px rgba(45, 42, 38, 0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: linear-gradient(145deg, #f0ebe4 0%, #e8e2da 100%);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+h1, h2, h3, .display { font-family: 'Nunito', sans-serif; }
+
+/* Shell */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: 'Nunito'; font-weight: 800; font-size: 18px; color: var(--brand); }
+.logo span { color: var(--ink); font-weight: 600; }
+.mode-tabs { display: flex; gap: 4px; background: var(--line); border-radius: 10px; padding: 3px; }
+.mode-tabs button {
+  border: 0; background: transparent; padding: 8px 18px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; color: var(--mut); cursor: pointer;
+}
+.mode-tabs button.active { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+
+.main-area { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 32px 20px 48px; gap: 32px; flex-wrap: wrap; }
+
+/* Phone frame */
+.phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.phone-label { font-size: 12px; color: var(--mut); font-weight: 500; letter-spacing: 0.02em; }
+.phone {
+  width: var(--phone-w); min-height: var(--phone-h);
+  background: var(--bg-warm); border-radius: 36px;
+  border: 10px solid #2d2a26; box-shadow: var(--shadow), 0 0 0 1px rgba(0,0,0,0.05);
+  overflow: hidden; position: relative; display: flex; flex-direction: column;
+}
+.phone-notch {
+  height: 28px; background: #2d2a26; border-radius: 0 0 18px 18px;
+  width: 120px; margin: 0 auto; flex-shrink: 0;
+}
+.phone-screen { flex: 1; overflow-y: auto; padding: 20px 18px 24px; scrollbar-width: thin; }
+
+/* Screens */
+.screen { display: none; animation: fadeIn 0.35s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; padding: 4px 10px; border-radius: 20px; margin-bottom: 10px;
+}
+.badge.brand { background: var(--brand-soft); color: var(--brand); }
+.badge.soft { background: var(--peach-soft); color: #b87850; }
+
+.hero-title { font-size: 24px; font-weight: 800; line-height: 1.25; margin-bottom: 8px; }
+.hero-sub { font-size: 14px; color: var(--mut); margin-bottom: 6px; }
+.hero-note { font-size: 12px; color: var(--mut); font-style: italic; margin-bottom: 20px; }
+
+.qr-hint {
+  display: flex; align-items: center; gap: 10px; background: #fff;
+  border: 1px dashed var(--line); border-radius: 12px; padding: 12px 14px;
+  font-size: 12px; color: var(--mut); margin-bottom: 20px;
+}
+.qr-box {
+  width: 44px; height: 44px; background: var(--ink); border-radius: 6px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 6px; flex-shrink: 0;
+}
+.qr-box span { background: #fff; border-radius: 1px; }
+
+.btn {
+  display: block; width: 100%; border: 0; border-radius: 14px; padding: 14px 20px;
+  font-size: 15px; font-weight: 700; font-family: 'Nunito', sans-serif;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(74,144,196,0.35); }
+.btn-secondary { background: #fff; color: var(--ink); border: 1.5px solid var(--line); margin-top: 10px; }
+.btn-ghost { background: transparent; color: var(--brand); font-size: 13px; padding: 10px; margin-top: 8px; }
+.btn-coral { background: var(--coral); color: #fff; }
+.btn-mint { background: var(--mint); color: #fff; margin-top: 10px; }
+
+.progress-bar { height: 4px; background: var(--line); border-radius: 4px; margin-bottom: 18px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--mint)); border-radius: 4px; transition: width 0.4s ease; }
+
+.q-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mut); margin-bottom: 4px; }
+.q-title { font-family: 'Nunito'; font-size: 20px; font-weight: 800; margin-bottom: 16px; line-height: 1.3; }
+
+.options { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  display: flex; align-items: center; gap: 12px; background: #fff;
+  border: 2px solid var(--line); border-radius: 14px; padding: 13px 14px;
+  cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  font-size: 14px; font-weight: 500; text-align: left; width: 100%;
+}
+.opt:hover { border-color: var(--brand); }
+.opt.selected { border-color: var(--brand); background: var(--brand-soft); }
+.opt .icon { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+
+.nav-row { display: flex; gap: 10px; margin-top: 20px; }
+.nav-row .btn { flex: 1; }
+.nav-row .btn-secondary { margin-top: 0; }
+
+/* Result */
+.result-card {
+  border-radius: 18px; padding: 18px; margin-bottom: 14px; position: relative; overflow: hidden;
+}
+.result-card::before {
+  content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
+  border-radius: 50%; opacity: 0.15; transform: translate(20%, -20%);
+}
+.fit-score-ring {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 50%; font-family: 'Nunito';
+  font-weight: 800; font-size: 16px; border: 3px solid; margin-bottom: 10px;
+}
+.product-name { font-family: 'Nunito'; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.product-family { font-size: 13px; opacity: 0.85; margin-bottom: 12px; }
+
+.reason-list { list-style: none; margin: 12px 0; }
+.reason-list li {
+  font-size: 13px; padding: 6px 0 6px 22px; position: relative; line-height: 1.4;
+}
+.reason-list li::before {
+  content: '✓'; position: absolute; left: 0; font-weight: 700; font-size: 12px;
+}
+
+.alt-card {
+  background: #fff; border: 1.5px solid var(--line); border-radius: 14px;
+  padding: 14px; margin-bottom: 14px;
+}
+.alt-card h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mut); margin-bottom: 6px; }
+.alt-card .name { font-family: 'Nunito'; font-weight: 700; font-size: 15px; }
+
+.disclaimer {
+  font-size: 11px; color: var(--mut); background: var(--bg); border-radius: 10px;
+  padding: 10px 12px; margin: 14px 0; line-height: 1.45;
+}
+.section-title { font-family: 'Nunito'; font-size: 14px; font-weight: 700; margin: 16px 0 8px; }
+
+.compare-row { display: flex; gap: 8px; margin-top: 12px; }
+.compare-row .btn { flex: 1; font-size: 13px; padding: 11px 10px; }
+
+/* Product detail */
+.sku-block {
+  background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line);
+}
+.sku-block.best { border-color: var(--brand); border-width: 2px; }
+.sku-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mut); }
+.sku-name { font-family: 'Nunito'; font-size: 17px; font-weight: 800; margin: 4px 0; }
+.sku-desc { font-size: 12px; color: var(--mut); }
+
+.compare-table { width: 100%; font-size: 12px; border-collapse: collapse; margin: 12px 0; }
+.compare-table th, .compare-table td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--line); }
+.compare-table th { font-size: 10px; text-transform: uppercase; color: var(--mut); font-weight: 600; }
+
+.shelf-cue {
+  background: var(--gold-soft); border-radius: 12px; padding: 12px 14px; font-size: 13px;
+  margin: 12px 0; display: flex; gap: 10px; align-items: flex-start;
+}
+.shelf-cue .pin { font-size: 18px; }
+
+.cta-stack { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+
+/* Education */
+.edu-card {
+  background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--line);
+}
+.edu-card h4 { font-family: 'Nunito'; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.edu-card p { font-size: 12px; color: var(--mut); line-height: 1.5; }
+.edu-banner {
+  background: var(--lavender-soft); border-radius: 10px; padding: 10px 12px;
+  font-size: 11px; color: #6b5a8a; margin-bottom: 14px; text-align: center;
+}
+
+/* Future concept */
+.future-panel {
+  background: linear-gradient(135deg, var(--lavender-soft), var(--peach-soft));
+  border-radius: 14px; padding: 14px; margin-top: 16px; border: 1px dashed var(--lavender);
+}
+.future-panel h4 { font-size: 12px; font-weight: 700; color: #7a6a9a; margin-bottom: 6px; }
+.future-panel p { font-size: 11px; color: var(--mut); }
+
+/* Debug panel */
+.debug-panel {
+  margin-top: 14px; border: 1px dashed #c44; border-radius: 10px; overflow: hidden;
+  font-size: 11px; font-family: ui-monospace, monospace;
+}
+.debug-panel summary {
+  padding: 8px 12px; background: #fff5f5; cursor: pointer; font-weight: 600; color: #a33;
+}
+.debug-body { padding: 10px 12px; background: #fff; max-height: 200px; overflow-y: auto; }
+.debug-body pre { white-space: pre-wrap; word-break: break-word; }
+
+/* Admin */
+.admin-view { display: none; width: 100%; max-width: 960px; }
+.admin-view.active { display: block; }
+.shopper-view { display: flex; flex-direction: column; align-items: center; }
+.shopper-view.hidden { display: none; }
+
+.admin-header { margin-bottom: 20px; }
+.admin-header h1 { font-size: 22px; font-weight: 800; }
+.admin-header p { font-size: 13px; color: var(--mut); }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.kpi-card {
+  background: #fff; border-radius: 14px; padding: 16px; border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.kpi-card .val { font-family: 'Nunito'; font-size: 28px; font-weight: 800; color: var(--brand); }
+.kpi-card .lbl { font-size: 12px; color: var(--mut); margin-top: 4px; }
+.kpi-card .delta { font-size: 11px; color: var(--mint); font-weight: 600; margin-top: 6px; }
+
+.admin-section { background: #fff; border-radius: 14px; padding: 18px; border: 1px solid var(--line); margin-bottom: 16px; }
+.admin-section h3 { font-family: 'Nunito'; font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+
+.bar-chart { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.bar-row .label { width: 140px; flex-shrink: 0; color: var(--mut); }
+.bar-row .track { flex: 1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar-row .fill { height: 100%; border-radius: 4px; background: var(--brand); }
+.bar-row .pct { width: 36px; text-align: right; font-weight: 600; font-size: 11px; }
+
+.dropoff-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; }
+.dropoff-item { background: var(--bg); border-radius: 10px; padding: 10px 6px; }
+.dropoff-item .num { font-family: 'Nunito'; font-size: 18px; font-weight: 800; color: var(--coral); }
+.dropoff-item .lbl { font-size: 10px; color: var(--mut); margin-top: 2px; }
+
+.split-badge { display: inline-flex; gap: 16px; margin-top: 8px; }
+.split-badge span { font-size: 13px; }
+.split-badge b { color: var(--brand); }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #fff; padding: 10px 20px; border-radius: 10px;
+  font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 200;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <header class="top-bar">
+    <div class="logo">Comfort <span>Product Fit Advisor</span></div>
+    <div class="mode-tabs">
+      <button type="button" id="tab-shopper" class="active" onclick="setMode('shopper')">Shopper demo</button>
+      <button type="button" id="tab-admin" onclick="setMode('admin')">Admin dashboard</button>
+    </div>
+  </header>
+
+  <main class="main-area">
+  <!-- Shopper phone prototype -->
+  <div class="shopper-view" id="shopper-view">
+    <div class="phone-wrap">
+      <div class="phone-label">QR scan · Fabric care aisle · Aeon demo</div>
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" id="phone-screen">
+
+          <!-- Welcome -->
+          <div class="screen active" id="screen-welcome">
+            <span class="badge brand">In-store · No login</span>
+            <h1 class="hero-title">Find the right Comfort for your laundry today</h1>
+            <p class="hero-sub">A 60-second product match for the fabric care aisle</p>
+            <p class="hero-note">No login. Just answer what you're washing today.</p>
+            <div class="qr-hint">
+              <div class="qr-box"><span></span><span></span><span></span><span></span></div>
+              <div>Scanned from shelf QR · Self-serve or BA-assisted</div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="startAdvisor()">Start product fit check</button>
+          </div>
+
+          <!-- Questions -->
+          <div class="screen" id="screen-questions">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:20%"></div></div>
+            <div class="q-label" id="q-step-label">Question 1 of 5</div>
+            <h2 class="q-title" id="q-title"></h2>
+            <div class="options" id="q-options"></div>
+            <div class="nav-row">
+              <button type="button" class="btn btn-secondary" id="btn-back" onclick="prevQuestion()" style="display:none">Back</button>
+              <button type="button" class="btn btn-primary" id="btn-next" onclick="nextQuestion()" disabled>Next</button>
+            </div>
+          </div>
+
+          <!-- Result -->
+          <div class="screen" id="screen-result">
+            <span class="badge brand">Your product fit</span>
+            <h2 class="hero-title" style="font-size:20px;margin-bottom:12px">Why this fits your laundry today</h2>
+            <div class="result-card" id="result-card">
+              <div class="fit-score-ring" id="fit-score-ring">—%</div>
+              <div class="product-name" id="result-name"></div>
+              <div class="product-family" id="result-family"></div>
+              <ul class="reason-list" id="reason-list"></ul>
+            </div>
+            <div class="alt-card">
+              <h4>Alternative match</h4>
+              <div class="name" id="alt-name"></div>
+              <p style="font-size:12px;color:var(--mut);margin-top:4px" id="alt-desc"></p>
+            </div>
+            <p class="disclaimer">This is a guided match, not a medical or technical claim. Scent perception varies by load, water, and drying method.</p>
+            <div class="compare-row">
+              <button type="button" class="btn btn-secondary" onclick="showAlternative()">Not sure? See alternative</button>
+              <button type="button" class="btn btn-secondary" onclick="swapToAlternative()">Compare scents</button>
+            </div>
+            <button type="button" class="btn btn-primary" style="margin-top:14px" onclick="goToProduct()">View product & shelf guide</button>
+            <button type="button" class="btn btn-ghost" onclick="goToEducation()">How Comfort fabric care works</button>
+            <div id="debug-mount"></div>
+          </div>
+
+          <!-- Product detail -->
+          <div class="screen" id="screen-product">
+            <button type="button" class="btn btn-ghost" style="margin:0 0 8px;padding:6px 0" onclick="showScreen('result')">← Back to match</button>
+            <h2 class="hero-title" style="font-size:20px">Your shelf guide</h2>
+
+            <div class="sku-block best" id="sku-best">
+              <div class="sku-label">Best match SKU</div>
+              <div class="sku-name" id="sku-best-name"></div>
+              <div class="sku-desc" id="sku-best-desc"></div>
+            </div>
+            <div class="sku-block" id="sku-alt">
+              <div class="sku-label">Alternative SKU</div>
+              <div class="sku-name" id="sku-alt-name"></div>
+              <div class="sku-desc" id="sku-alt-desc"></div>
+            </div>
+
+            <div class="section-title">Use case comparison</div>
+            <table class="compare-table" id="compare-table">
+              <thead><tr><th></th><th>Best match</th><th>Alternative</th></tr></thead>
+              <tbody id="compare-body"></tbody>
+            </table>
+
+            <div class="shelf-cue" id="shelf-cue">
+              <span class="pin">📍</span>
+              <div id="shelf-cue-text"></div>
+            </div>
+
+            <div class="section-title">Usage ritual</div>
+            <p style="font-size:13px;color:var(--mut);line-height:1.5" id="ritual-tip"></p>
+
+            <div class="cta-stack">
+              <button type="button" class="btn btn-primary" onclick="trackCta('find-bottle')">Find this bottle</button>
+              <button type="button" class="btn btn-coral" onclick="trackCta('show-ba')">Show this to BA</button>
+              <button type="button" class="btn btn-mint" onclick="trackCta('claim-sample')">Claim sample</button>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="showFutureConcept()">Future concept (optional)</button>
+          </div>
+
+          <!-- Education -->
+          <div class="screen" id="screen-education">
+            <button type="button" class="btn btn-ghost" style="margin:0 0 8px;padding:6px 0" onclick="showScreen('result')">← Back</button>
+            <div class="edu-banner">Illustrative product education · Pending brand-approved claims</div>
+            <h2 class="hero-title" style="font-size:18px">Understanding fabric conditioner</h2>
+            <div class="edu-card">
+              <h4>Designed for a fresher laundry feel</h4>
+              <p>Comfort is formulated to help clothes feel softer and smell pleasant after washing. Results depend on load size, water hardness, and drying method.</p>
+            </div>
+            <div class="edu-card">
+              <h4>Scent strength that fits your routine</h4>
+              <p>Helps you choose a scent strength that fits your routine — from light everyday freshness to longer-lasting confidence for busy households.</p>
+            </div>
+            <div class="edu-card">
+              <h4>Right product for your fabrics</h4>
+              <p>Different variants suit different laundry mixes. This advisor matches your washing context to a recommended bottle — not a performance guarantee.</p>
+            </div>
+            <div class="edu-card">
+              <h4>Indoor vs outdoor drying</h4>
+              <p>Indoor drying may affect how scent develops. Products with balanced or gentle profiles are often chosen for enclosed drying spaces.</p>
+            </div>
+            <button type="button" class="btn btn-primary" style="margin-top:12px" onclick="goToProduct()">See my recommended bottle</button>
+          </div>
+
+          <!-- Future concept -->
+          <div class="screen" id="screen-future">
+            <button type="button" class="btn btn-ghost" style="margin:0 0 8px;padding:6px 0" onclick="showScreen('product')">← Back to shelf guide</button>
+            <div class="future-panel">
+              <h4>🔮 Future concept — not in current demo</h4>
+              <p>Home scent diffuser paired with your laundry ritual. This is a roadmap idea only — not part of today's in-store product selection flow.</p>
+            </div>
+            <p style="font-size:12px;color:var(--mut);margin-top:14px">The main demo focuses on choosing the right Comfort bottle at shelf. Diffuser pairing may be explored in a later trade activation.</p>
+            <button type="button" class="btn btn-secondary" onclick="restart()">Start another fit check</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin dashboard -->
+  <div class="admin-view" id="admin-view">
+    <div class="admin-header">
+      <h1>Comfort Product Fit Advisor — Dashboard</h1>
+      <p>Modern trade in-store demo · Illustrative metrics for presenter walkthrough</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="val">4,218</div><div class="lbl">Sessions this month</div><div class="delta">↑ 12% vs last month</div></div>
+      <div class="kpi-card"><div class="val">78%</div><div class="lbl">Product fit completion rate</div><div class="delta">↑ 5 pts</div></div>
+      <div class="kpi-card"><div class="val">3,104</div><div class="lbl">Best match viewed</div><div class="delta">74% of completions</div></div>
+      <div class="kpi-card"><div class="val">41%</div><div class="lbl">Sample / BA CTA click rate</div><div class="delta">↑ 8 pts</div></div>
+      <div class="kpi-card"><div class="val">892</div><div class="lbl">BA-prompted scans</div><div class="delta">21% of sessions</div></div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Top shopping missions</h3>
+      <div class="bar-chart" id="chart-missions"></div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Top recommended products</h3>
+      <div class="bar-chart" id="chart-products"></div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Drop-off by question</h3>
+      <div class="dropoff-grid">
+        <div class="dropoff-item"><div class="num">8%</div><div class="lbl">Q1 Mission</div></div>
+        <div class="dropoff-item"><div class="num">5%</div><div class="lbl">Q2 Scent</div></div>
+        <div class="dropoff-item"><div class="num">4%</div><div class="lbl">Q3 Fabric</div></div>
+        <div class="dropoff-item"><div class="num">3%</div><div class="lbl">Q4 Drying</div></div>
+        <div class="dropoff-item"><div class="num">2%</div><div class="lbl">Q5 Intensity</div></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h3>Assisted vs self-serve</h3>
+      <div class="split-badge">
+        <span>Self-serve: <b>79%</b></span>
+        <span>BA-assisted: <b>21%</b></span>
+      </div>
+      <div class="bar-chart" style="margin-top:14px">
+        <div class="bar-row"><span class="label">Self-serve</span><div class="track"><div class="fill" style="width:79%"></div></div><span class="pct">79%</span></div>
+        <div class="bar-row"><span class="label">BA-assisted</span><div class="track"><div class="fill" style="width:21%;background:var(--coral)"></div></div><span class="pct">21%</span></div>
+      </div>
+    </div>
+  </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========== DATA ========== */
+const WEIGHTS = {
+  scentPreference: 30,
+  shoppingMission: 25,
+  fabricContext: 15,
+  dryingCondition: 15,
+  scentIntensity: 15
+};
+
+const QUESTIONS = [
+  {
+    id: 'shoppingMission',
+    title: 'What brings you to the fabric care aisle today?',
+    options: [
+      { value: 'daily-clothes', label: 'Daily clothes', icon: '👕' },
+      { value: 'workwear', label: 'Workwear', icon: '💼' },
+      { value: 'family-laundry', label: 'Family laundry', icon: '👨‍👩‍👧' },
+      { value: 'towels-bedsheets', label: 'Towels / bedsheets', icon: '🛏️' },
+      { value: 'indoor-drying', label: 'Indoor drying', icon: '🏠' },
+      { value: 'special-occasion', label: 'Special occasion', icon: '✨' }
+    ]
+  },
+  {
+    id: 'scentPreference',
+    title: 'Which scent mood do you prefer?',
+    options: [
+      { value: 'fresh-clean', label: 'Fresh & clean', icon: '🌊' },
+      { value: 'soft-cozy', label: 'Soft & cozy', icon: '☁️' },
+      { value: 'floral-elegant', label: 'Floral & elegant', icon: '🌸' },
+      { value: 'long-lasting-confidence', label: 'Long-lasting confidence', icon: '💪' },
+      { value: 'light-gentle', label: 'Light & gentle', icon: '🍃' }
+    ]
+  },
+  {
+    id: 'fabricContext',
+    title: 'What are you mostly washing?',
+    options: [
+      { value: 'cotton-daily', label: 'Cotton daily wear', icon: '👔' },
+      { value: 'office-clothes', label: 'Office clothes', icon: '🧥' },
+      { value: 'kids-family', label: 'Kids / family clothes', icon: '🧒' },
+      { value: 'towels-bedsheets', label: 'Towels / bedsheets', icon: '🛁' },
+      { value: 'delicate-clothes', label: 'Delicate clothes', icon: '🎀' }
+    ]
+  },
+  {
+    id: 'dryingCondition',
+    title: 'How do you usually dry laundry?',
+    options: [
+      { value: 'outdoor-sun', label: 'Outdoor sun', icon: '☀️' },
+      { value: 'indoor-drying', label: 'Indoor drying', icon: '🪟' },
+      { value: 'mixed', label: 'Mixed', icon: '🔄' },
+      { value: 'machine-dry', label: 'Machine dry', icon: '🔥' }
+    ]
+  },
+  {
+    id: 'scentIntensity',
+    title: 'How strong should the scent feel?',
+    options: [
+      { value: 'light', label: 'Light', icon: '🌤️' },
+      { value: 'balanced', label: 'Balanced', icon: '⚖️' },
+      { value: 'long-lasting', label: 'Long-lasting', icon: '🕐' }
+    ]
+  }
+];
+
+const REASON_LABELS = {
+  shoppingMission: {
+    'daily-clothes': 'Matches your daily laundry routine',
+    'workwear': 'Suited for workwear you want to feel confident in',
+    'family-laundry': 'Fits a busy family laundry mix',
+    'towels-bedsheets': 'Works well for towels and bedsheets',
+    'indoor-drying': 'Chosen for indoor drying setups',
+    'special-occasion': 'Aligned with special-occasion fabrics'
+  },
+  scentPreference: {
+    'fresh-clean': 'Fresh & clean scent profile',
+    'soft-cozy': 'Soft & cozy fragrance family',
+    'floral-elegant': 'Floral & elegant character',
+    'long-lasting-confidence': 'Long-lasting confidence scent',
+    'light-gentle': 'Light & gentle on everyday loads'
+  },
+  fabricContext: {
+    'cotton-daily': 'Good for cotton daily wear',
+    'office-clothes': 'Suits office and structured fabrics',
+    'kids-family': 'Family-friendly everyday care',
+    'towels-bedsheets': 'Towels & bedsheets use case',
+    'delicate-clothes': 'Gentle enough for delicate items'
+  },
+  dryingCondition: {
+    'outdoor-sun': 'Works with outdoor sun drying',
+    'indoor-drying': 'Indoor drying routine fit',
+    'mixed': 'Flexible for mixed drying habits',
+    'machine-dry': 'Compatible with machine drying'
+  },
+  scentIntensity: {
+    'light': 'Light scent intensity preference',
+    'balanced': 'Balanced scent strength',
+    'long-lasting': 'Longer-lasting scent feel'
+  }
+};
+
+const PRODUCTS = [
+  {
+    id: 'fresh-sky',
+    name: 'Comfort Fresh Sky',
+    scentFamily: 'Fresh aquatic',
+    bestFor: 'Daily loads & outdoor drying',
+    scentStrength: 'Balanced to long-lasting',
+    fitTags: {
+      shoppingMission: ['daily-clothes', 'workwear', 'indoor-drying'],
+      scentPreference: ['fresh-clean', 'long-lasting-confidence'],
+      fabricContext: ['cotton-daily', 'office-clothes', 'towels-bedsheets'],
+      dryingCondition: ['outdoor-sun', 'mixed', 'machine-dry'],
+      scentIntensity: ['balanced', 'long-lasting']
+    },
+    shelfCue: 'Blue cap bottles · Middle shelf, fabric conditioner section · Look for "Fresh Sky" sky-blue label',
+    ritualTip: 'Add to the final rinse cycle. For everyday cotton loads, use the cap measure on the bottle label. Pair with sun-dried laundry for a crisp, airy feel.',
+    claimSafeDescription: 'Designed for a fresher laundry feel on everyday cotton and workwear loads.',
+    colorTheme: { bg: '#e8f3fa', accent: '#4a90c4', text: '#2a5a7a' }
+  },
+  {
+    id: 'botanicals-lily',
+    name: 'Comfort Botanicals Lily & White Musk',
+    scentFamily: 'Floral musk',
+    bestFor: 'Special pieces & elegant fabrics',
+    scentStrength: 'Balanced floral',
+    fitTags: {
+      shoppingMission: ['special-occasion', 'family-laundry', 'towels-bedsheets'],
+      scentPreference: ['floral-elegant', 'soft-cozy'],
+      fabricContext: ['delicate-clothes', 'towels-bedsheets', 'office-clothes'],
+      dryingCondition: ['indoor-drying', 'mixed'],
+      scentIntensity: ['balanced', 'long-lasting']
+    },
+    shelfCue: 'Cream & gold label · Premium row, right side of aisle · "Botanicals" floral motif',
+    ritualTip: 'Ideal for items you want to feel softly scented — delicates, bedsheets, or occasion wear. Use in final rinse; avoid over-pouring on small loads.',
+    claimSafeDescription: 'Floral fabric conditioner designed to complement delicate and special-occasion laundry.',
+    colorTheme: { bg: '#f0ebf8', accent: '#9b7ec4', text: '#5a4578' }
+  },
+  {
+    id: 'everyday-fresh',
+    name: 'Comfort Everyday Fresh',
+    scentFamily: 'Clean cotton',
+    bestFor: 'Family mixed loads',
+    scentStrength: 'Balanced',
+    fitTags: {
+      shoppingMission: ['daily-clothes', 'family-laundry', 'workwear'],
+      scentPreference: ['fresh-clean', 'soft-cozy'],
+      fabricContext: ['cotton-daily', 'kids-family', 'office-clothes'],
+      dryingCondition: ['mixed', 'indoor-drying', 'machine-dry'],
+      scentIntensity: ['balanced', 'light']
+    },
+    shelfCue: 'Green accent label · Family-size bottles, lower shelf · "Everyday Fresh" banner',
+    ritualTip: 'Your go-to for mixed family baskets. Measure with the cap, add at rinse. Works across cotton, blends, and kids\' clothes.',
+    claimSafeDescription: 'Everyday fabric conditioner for mixed family laundry with a clean, approachable scent.',
+    colorTheme: { bg: '#e8f6f0', accent: '#5aab8a', text: '#2d6b52' }
+  },
+  {
+    id: 'pure-gentle',
+    name: 'Comfort Pure Gentle Care',
+    scentFamily: 'Light hypoallergenic-style',
+    bestFor: 'Gentle & indoor routines',
+    scentStrength: 'Light',
+    fitTags: {
+      shoppingMission: ['family-laundry', 'indoor-drying', 'daily-clothes'],
+      scentPreference: ['light-gentle'],
+      fabricContext: ['kids-family', 'delicate-clothes', 'cotton-daily'],
+      dryingCondition: ['indoor-drying', 'mixed'],
+      scentIntensity: ['light', 'balanced']
+    },
+    shelfCue: 'White & soft-blue pack · Sensitive-care bay or top shelf · "Pure Gentle Care" icon',
+    ritualTip: 'Best when you prefer a lighter scent or dry indoors. Use the recommended dose on the label for small or delicate loads.',
+    claimSafeDescription: 'Light-scent fabric conditioner designed for gentle everyday care. Formulation claims pending brand approval.',
+    colorTheme: { bg: '#fef3eb', accent: '#e8927c', text: '#8a5a48' }
+  }
+];
+
+/* ========== STATE ========== */
+const state = {
+  currentQ: 0,
+  answers: {},
+  fitResult: null,
+  viewingAlternative: false,
+  debug: new URLSearchParams(location.search).get('debug') === 'true'
+};
+
+/* ========== SCORING ========== */
+function scoreDimension(productTags, userValue) {
+  if (!userValue) return 0;
+  if (productTags.includes(userValue)) return 1;
+  // Partial: long-lasting-confidence maps to long-lasting intensity family
+  if (userValue === 'long-lasting-confidence' && productTags.includes('long-lasting')) return 0.7;
+  return 0;
+}
+
+function computeProductFit(answers) {
+  const scores = PRODUCTS.map(product => {
+    let total = 0;
+    const breakdown = {};
+    for (const [dim, weight] of Object.entries(WEIGHTS)) {
+      const userVal = answers[dim];
+      const tags = product.fitTags[dim] || [];
+      const match = scoreDimension(tags, userVal);
+      const pts = match * weight;
+      breakdown[dim] = { match, pts, max: weight };
+      total += pts;
+    }
+    return { product, score: total, breakdown, pct: Math.round(total) };
+  });
+
+  scores.sort((a, b) => b.score - a.score);
+  const best = scores[0];
+  const alt = scores[1];
+
+  const reasonCodes = buildReasonCodes(best, answers);
+
+  return {
+    bestMatch: best.product,
+    alternativeMatch: alt.product,
+    fitScore: best.pct,
+    altFitScore: alt.pct,
+    reasonCodes,
+    usageRitual: best.product.ritualTip,
+    shelfCTA: best.product.shelfCue,
+    allScores: scores.map(s => ({
+      id: s.product.id,
+      name: s.product.name,
+      score: s.score,
+      pct: s.pct,
+      breakdown: s.breakdown
+    }))
+  };
+}
+
+function buildReasonCodes(best, answers) {
+  const codes = [];
+  const sortedDims = Object.entries(WEIGHTS).sort((a, b) => b[1] - a[1]);
+  for (const [dim] of sortedDims) {
+    const val = answers[dim];
+    const tags = best.product.fitTags[dim] || [];
+    if (val && tags.includes(val)) {
+      codes.push(REASON_LABELS[dim][val] || `Matches ${dim}`);
+    } else if (val === 'long-lasting-confidence' && tags.includes('long-lasting')) {
+      codes.push(REASON_LABELS.scentPreference['long-lasting-confidence']);
+    }
+  }
+  while (codes.length < 3) {
+    codes.push(best.product.claimSafeDescription);
+    if (codes.length >= 4) break;
+  }
+  return codes.slice(0, 4);
+}
+
+/* ========== UI ========== */
+function setMode(mode) {
+  document.getElementById('tab-shopper').classList.toggle('active', mode === 'shopper');
+  document.getElementById('tab-admin').classList.toggle('active', mode === 'admin');
+  document.getElementById('shopper-view').classList.toggle('hidden', mode === 'admin');
+  document.getElementById('admin-view').classList.toggle('active', mode === 'admin');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.getElementById('phone-screen').scrollTop = 0;
+}
+
+function startAdvisor() {
+  state.currentQ = 0;
+  state.answers = {};
+  state.fitResult = null;
+  state.viewingAlternative = false;
+  renderQuestion();
+  showScreen('questions');
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[state.currentQ];
+  const pct = ((state.currentQ + 1) / QUESTIONS.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('q-step-label').textContent = `Question ${state.currentQ + 1} of ${QUESTIONS.length}`;
+  document.getElementById('q-title').textContent = q.title;
+  document.getElementById('btn-back').style.display = state.currentQ > 0 ? 'block' : 'none';
+
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = q.options.map(o => `
+    <button type="button" class="opt${state.answers[q.id] === o.value ? ' selected' : ''}"
+      onclick="selectOption('${q.id}','${o.value}')">
+      <span class="icon">${o.icon}</span>
+      <span>${o.label}</span>
+    </button>
+  `).join('');
+
+  const hasAnswer = !!state.answers[q.id];
+  const btn = document.getElementById('btn-next');
+  btn.disabled = !hasAnswer;
+  btn.textContent = state.currentQ === QUESTIONS.length - 1 ? 'See my match' : 'Next';
+}
+
+function selectOption(qId, value) {
+  state.answers[qId] = value;
+  renderQuestion();
+}
+
+function prevQuestion() {
+  if (state.currentQ > 0) {
+    state.currentQ--;
+    renderQuestion();
+  }
+}
+
+function nextQuestion() {
+  if (!state.answers[QUESTIONS[state.currentQ].id]) return;
+  if (state.currentQ < QUESTIONS.length - 1) {
+    state.currentQ++;
+    renderQuestion();
+  } else {
+    finishAdvisor();
+  }
+}
+
+function finishAdvisor() {
+  state.fitResult = computeProductFit(state.answers);
+  state.viewingAlternative = false;
+  renderResult();
+  showScreen('result');
+}
+
+function renderResult() {
+  const r = state.fitResult;
+  const product = state.viewingAlternative ? r.alternativeMatch : r.bestMatch;
+  const score = state.viewingAlternative ? r.altFitScore : r.fitScore;
+  const theme = product.colorTheme;
+
+  const card = document.getElementById('result-card');
+  card.style.background = theme.bg;
+  card.style.color = theme.text;
+
+  const ring = document.getElementById('fit-score-ring');
+  ring.textContent = score + '%';
+  ring.style.borderColor = theme.accent;
+  ring.style.color = theme.accent;
+
+  document.getElementById('result-name').textContent = product.name;
+  document.getElementById('result-family').textContent = product.scentFamily + ' · ' + product.bestFor;
+
+  const reasons = state.viewingAlternative
+    ? buildReasonCodes({ product: r.alternativeMatch, breakdown: {} }, state.answers)
+    : r.reasonCodes;
+
+  document.getElementById('reason-list').innerHTML = reasons
+    .map(rc => `<li>${rc}</li>`).join('');
+
+  const alt = state.viewingAlternative ? r.bestMatch : r.alternativeMatch;
+  document.getElementById('alt-name').textContent = alt.name;
+  document.getElementById('alt-desc').textContent = alt.claimSafeDescription;
+
+  renderDebug();
+}
+
+function showAlternative() {
+  state.viewingAlternative = true;
+  renderResult();
+}
+
+function swapToAlternative() {
+  state.viewingAlternative = !state.viewingAlternative;
+  renderResult();
+  showToast(state.viewingAlternative ? 'Showing alternative match' : 'Showing best match');
+}
+
+function goToProduct() {
+  renderProduct();
+  showScreen('product');
+}
+
+function renderProduct() {
+  const r = state.fitResult;
+  const best = r.bestMatch;
+  const alt = r.alternativeMatch;
+
+  document.getElementById('sku-best-name').textContent = best.name;
+  document.getElementById('sku-best-desc').textContent = best.claimSafeDescription;
+  document.getElementById('sku-alt-name').textContent = alt.name;
+  document.getElementById('sku-alt-desc').textContent = alt.claimSafeDescription;
+  document.getElementById('shelf-cue-text').textContent = r.shelfCTA;
+  document.getElementById('ritual-tip').textContent = r.usageRitual;
+
+  const rows = [
+    ['Scent family', best.scentFamily, alt.scentFamily],
+    ['Best for', best.bestFor, alt.bestFor],
+    ['Scent strength', best.scentStrength, alt.scentStrength],
+    ['Fit score', r.fitScore + '%', r.altFitScore + '%']
+  ];
+  document.getElementById('compare-body').innerHTML = rows.map(([label, a, b]) =>
+    `<tr><td>${label}</td><td><b>${a}</b></td><td>${b}</td></tr>`
+  ).join('');
+}
+
+function goToEducation() {
+  showScreen('education');
+}
+
+function showFutureConcept() {
+  showScreen('future');
+}
+
+function restart() {
+  startAdvisor();
+}
+
+function trackCta(type) {
+  const labels = {
+    'find-bottle': 'Shelf directions noted — find this bottle',
+    'show-ba': 'Show this screen to your brand ambassador',
+    'claim-sample': 'Sample claim registered (demo)'
+  };
+  showToast(labels[type] || 'Action recorded (demo)');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ========== DEBUG ========== */
+function renderDebug() {
+  const mount = document.getElementById('debug-mount');
+  if (!state.debug || !state.fitResult) {
+    mount.innerHTML = '';
+    return;
+  }
+  const r = state.fitResult;
+  mount.innerHTML = `
+    <details class="debug-panel" open>
+      <summary>Debug — presenter mode</summary>
+      <div class="debug-body"><pre>${JSON.stringify({
+        inputs: state.answers,
+        productScores: r.allScores,
+        winningProduct: r.bestMatch.name,
+        alternativeProduct: r.alternativeMatch.name,
+        fitScore: r.fitScore
+      }, null, 2)}</pre></div>
+    </details>`;
+}
+
+/* ========== ADMIN CHARTS ========== */
+function initAdminCharts() {
+  const missions = [
+    ['Daily clothes', 32], ['Family laundry', 24], ['Workwear', 18],
+    ['Towels / bedsheets', 14], ['Indoor drying', 8], ['Special occasion', 4]
+  ];
+  const products = [
+    ['Everyday Fresh', 34], ['Fresh Sky', 28], ['Pure Gentle Care', 22], ['Botanicals Lily', 16]
+  ];
+  document.getElementById('chart-missions').innerHTML = missions.map(([l, p]) => barRow(l, p)).join('');
+  document.getElementById('chart-products').innerHTML = products.map(([l, p]) => barRow(l, p)).join('');
+}
+
+function barRow(label, pct) {
+  return `<div class="bar-row"><span class="label">${label}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="pct">${pct}%</span></div>`;
+}
+
+initAdminCharts();
+</script>
+</body>
+</html>
